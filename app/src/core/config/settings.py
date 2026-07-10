@@ -70,6 +70,11 @@ class Settings(BaseSettings):
     CREDIT_CARD_STATEMENT_PATH: str = "./data/credit_card_statement.csv"
     CREDIT_CARD_LAST_4_DIGITS: str | None = None
 
+    # Google Sheets (Demo/Presentation)
+    GOOGLE_SHEETS_ID: str | None = None
+    GOOGLE_SHEETS_OAUTH_TOKEN: str | None = None
+    USE_SHEETS_FOR_DEMO: bool = True
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def _split_cors_origins(cls, value: str | list[str]) -> list[str]:

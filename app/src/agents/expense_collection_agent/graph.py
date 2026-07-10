@@ -17,6 +17,7 @@ from typing import Any, cast
 from langgraph.graph import END, StateGraph
 
 from src.application.expenses.services.sync_service import ExpenseSyncService
+from src.core.config.settings import get_settings
 from src.core.logging.logger import get_logger
 from src.infrastructure.connectors.bank_csv import BankCSVConnector
 from src.infrastructure.connectors.base import ConnectorError, Transaction
@@ -27,6 +28,7 @@ from src.infrastructure.connectors.razorpay import RazorpayConnector
 from src.infrastructure.connectors.zoho import ZohoConnector
 from src.infrastructure.db.repositories.expense import ExpenseRepositoryImpl
 from src.infrastructure.db.session import AsyncSession
+from src.infrastructure.demo_data import generate_demo_expenses
 
 logger = get_logger(__name__)
 
@@ -85,7 +87,22 @@ class ExpenseCollectionGraph:
     async def _fetch_all_sources(self, state: ExpenseCollectionState) -> ExpenseCollectionState:
         """Fetch transactions from all 6 sources in parallel."""
         logger.info(f"Fetching expenses for company {state.company_id}")
+        settings = get_settings()
 
+        # Demo/Presentation mode: use sample data
+        if settings.USE_SHEETS_FOR_DEMO:
+            logger.info("Using demo data (presentation mode)")
+            all_transactions = generate_demo_expenses(state.company_id)
+            state.connector_results["DemoDataGenerator"] = {
+                "count": len(all_transactions),
+                "status": "success",
+                "note": "Demo/presentation mode"
+            }
+            state.raw_transactions = all_transactions
+            logger.info(f"Total demo transactions loaded: {len(all_transactions)}")
+            return state
+
+        # Production mode: use real connectors
         connectors = [
             ZohoConnector(),
             MetaConnector(),

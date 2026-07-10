@@ -5,12 +5,14 @@ from src.api.v1.routers import (
     auth,
     budgets,
     dashboard,
+    demo,
     expenses,
     forecasts,
     health,
     marketing,
     notifications,
     reports,
+    sheets_auth,
 )
 
 api_router = APIRouter()
@@ -24,4 +26,6 @@ api_router.include_router(reports.router)
 api_router.include_router(notifications.router)
 api_router.include_router(forecasts.router)
 api_router.include_router(ai.router)
+api_router.include_router(demo.router)
+api_router.include_router(sheets_auth.router)
 api_router.include_router(health.router)
