@@ -12,19 +12,19 @@ Workflow:
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
-from src.core.logging.logger import get_logger
-from src.infrastructure.connectors.zoho import ZohoConnector
-from src.infrastructure.connectors.meta import MetaConnector
-from src.infrastructure.connectors.google_ads import GoogleAdsConnector
-from src.infrastructure.connectors.razorpay import RazorpayConnector
-from src.infrastructure.connectors.bank_csv import BankCSVConnector
-from src.infrastructure.connectors.credit_card import CreditCardConnector
-from src.infrastructure.connectors.base import Transaction, ConnectorError
 from src.application.expenses.services.sync_service import ExpenseSyncService
+from src.core.logging.logger import get_logger
+from src.infrastructure.connectors.bank_csv import BankCSVConnector
+from src.infrastructure.connectors.base import ConnectorError, Transaction
+from src.infrastructure.connectors.credit_card import CreditCardConnector
+from src.infrastructure.connectors.google_ads import GoogleAdsConnector
+from src.infrastructure.connectors.meta import MetaConnector
+from src.infrastructure.connectors.razorpay import RazorpayConnector
+from src.infrastructure.connectors.zoho import ZohoConnector
 from src.infrastructure.db.repositories.expense import ExpenseRepositoryImpl
 from src.infrastructure.db.session import AsyncSession
 
@@ -100,6 +100,7 @@ class ExpenseCollectionGraph:
         for connector in connectors:
             try:
                 logger.info(f"Fetching from {connector.__class__.__name__}")
+                await connector.authenticate()
                 transactions = await connector.fetch_transactions(
                     state.company_id,
                     state.start_date,
@@ -187,7 +188,7 @@ class ExpenseCollectionGraph:
                 "source_transaction_id": tx.source_transaction_id,
                 "amount": tx.amount,
                 "description": tx.description,
-                "date": tx.date,
+                "date": tx.transaction_date,
                 "category": category,
             })
 
@@ -230,7 +231,7 @@ class ExpenseCollectionGraph:
                     source_transaction_id=tx["source_transaction_id"],
                     amount=Decimal(str(tx["amount"])),
                     description=tx["description"],
-                    date=tx["date"]
+                    transaction_date=tx["date"]
                 )
                 for tx in state.categorized_transactions
             ]
@@ -286,13 +287,13 @@ Expense Collection Summary:
         runnable = self.graph.compile()
 
         # Execute
-        final_state = await runnable.ainvoke(state)
+        final_state = cast(dict[str, Any], await runnable.ainvoke(state))
 
         return {
-            "success": final_state.errors_count == 0,
-            "total_synced": final_state.total_synced,
-            "duplicates_removed": final_state.duplicates_removed,
-            "errors": final_state.errors_count,
-            "connector_results": final_state.connector_results,
-            "error_details": final_state.errors if final_state.errors else None,
+            "success": final_state["errors_count"] == 0,
+            "total_synced": final_state["total_synced"],
+            "duplicates_removed": final_state["duplicates_removed"],
+            "errors": final_state["errors_count"],
+            "connector_results": final_state["connector_results"],
+            "error_details": final_state["errors"] if final_state["errors"] else None,
         }

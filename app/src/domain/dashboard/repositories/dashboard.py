@@ -7,7 +7,6 @@ from src.domain.dashboard.entities.metrics import (
     BudgetUtilizationBreakdown,
     CampaignSpendBreakdown,
     DepartmentSpendBreakdown,
-    KPIMetric,
     Trend,
 )
 

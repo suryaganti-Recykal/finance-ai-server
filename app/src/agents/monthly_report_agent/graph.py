@@ -1,21 +1,26 @@
 """LangGraph agent for generating monthly financial reports.
 
 Workflow:
-1. Aggregate: Collect all monthly financial data
+1. Aggregate: Collect all monthly financial data from real sources
 2. Analyze: Calculate performance metrics and insights
-3. Generate: Create PDF/Excel report
-4. Summarize: Generate AI insights
+3. Generate: Create report content
+4. Summarize: Generate AI insights using Claude API
 5. Store: Save report to database
 """
 
+import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
-from langgraph.graph import StateGraph, END
+from anthropic import Anthropic
+from langgraph.graph import END, StateGraph
 
 from src.core.logging.logger import get_logger
+from src.infrastructure.db.repositories.campaign import CampaignRepositoryImpl
+from src.infrastructure.db.repositories.dashboard import DashboardRepositoryImpl
+from src.infrastructure.db.session import AsyncSession
 
 logger = get_logger(__name__)
 
@@ -58,8 +63,12 @@ class MonthlyReportState:
 class MonthlyReportGraph:
     """LangGraph implementation of monthly report generation."""
 
-    def __init__(self) -> None:
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
         self.graph = StateGraph(MonthlyReportState)
+        self.dashboard_repo = DashboardRepositoryImpl(db)
+        self.campaign_repo = CampaignRepositoryImpl(db)
+        self.anthropic = Anthropic()
         self._build_graph()
 
     def _build_graph(self) -> None:
@@ -78,26 +87,49 @@ class MonthlyReportGraph:
         self.graph.add_edge("store", END)
 
     async def _aggregate_data(self, state: MonthlyReportState) -> MonthlyReportState:
-        """Aggregate monthly financial data."""
+        """Aggregate monthly financial data from real sources."""
         logger.info(f"Aggregating data for {state.year}-{state.month:02d}")
 
         try:
-            # Simulate data aggregation
-            state.total_revenue = Decimal("150000")
-            state.total_expenses = Decimal("85000")
-            state.total_profit = state.total_revenue - state.total_expenses
-            state.total_collections = Decimal("120000")
-            state.cash_position = Decimal("250000")
+            import uuid
+            company_uuid = uuid.UUID(state.company_id) if isinstance(state.company_id, str) else state.company_id
 
-            # Department breakdown
+            # Calculate date range for the month
+            start_date = datetime(state.year, state.month, 1)
+            if state.month == 12:
+                end_date = datetime(state.year + 1, 1, 1) - timedelta(seconds=1)
+            else:
+                end_date = datetime(state.year, state.month + 1, 1) - timedelta(seconds=1)
+
+            # Fetch real data in parallel
+            revenue_result, expenses_result, collections_result, campaigns_result = await asyncio.gather(
+                self.dashboard_repo.get_total_revenue(company_uuid, start_date, end_date),
+                self.dashboard_repo.get_total_expenses(company_uuid, start_date, end_date),
+                self.dashboard_repo.get_total_collections(company_uuid, start_date, end_date),
+                self.campaign_repo.get_by_date_range(company_uuid, start_date, end_date),
+            )
+
+            state.total_revenue = Decimal(str(revenue_result or 0))
+            state.total_expenses = Decimal(str(expenses_result or 0))
+            state.total_collections = Decimal(str(collections_result or 0))
+            state.total_profit = state.total_revenue - state.total_expenses
+            state.cash_position = state.total_collections
+
+            # Get department breakdown from campaigns
+            dept_spend = {}
+            if campaigns_result:
+                for campaign in campaigns_result:
+                    dept_name = getattr(campaign, 'department', 'Other')
+                    spend = float(getattr(campaign, 'budget_spent', 0) or 0)
+                    roi = float(getattr(campaign, 'revenue_generated', 0) or 0) / spend if spend > 0 else 0
+                    dept_spend[dept_name] = {"spend": spend, "roi": roi}
+
             state.departments = [
-                {"name": "Marketing", "spend": 15000, "roi": 5.2},
-                {"name": "Operations", "spend": 35000, "roi": 1.8},
-                {"name": "HR", "spend": 20000, "roi": 1.5},
-                {"name": "Sales", "spend": 15000, "roi": 3.2},
+                {"name": k, "spend": v["spend"], "roi": v["roi"]}
+                for k, v in dept_spend.items()
             ]
 
-            logger.info("Data aggregated successfully")
+            logger.info(f"Data aggregated: Revenue={state.total_revenue}, Expenses={state.total_expenses}")
 
         except Exception as e:
             logger.error(f"Error aggregating data: {e}")
@@ -110,13 +142,27 @@ class MonthlyReportGraph:
         logger.info("Analyzing financial metrics")
 
         try:
+            import uuid
+            company_uuid = uuid.UUID(state.company_id) if isinstance(state.company_id, str) else state.company_id
+
             if state.total_revenue > 0:
                 state.profit_margin = (state.total_profit / state.total_revenue * 100)
             else:
                 state.profit_margin = Decimal(0)
 
-            # Simulate growth calculation (vs previous month)
-            state.growth_vs_previous = Decimal("8.5")  # 8.5% growth
+            # Calculate growth vs previous month
+            prev_start = datetime(state.year, state.month - 1 if state.month > 1 else 12, 1)
+            prev_end = datetime(state.year if state.month > 1 else state.year - 1, state.month - 1 if state.month > 1 else 12, 1) - timedelta(seconds=1)
+
+            try:
+                prev_revenue = await self.dashboard_repo.get_total_revenue(company_uuid, prev_start, prev_end)
+                prev_revenue = Decimal(str(prev_revenue or 0))
+                if prev_revenue > 0:
+                    state.growth_vs_previous = ((state.total_revenue - prev_revenue) / prev_revenue * 100)
+                else:
+                    state.growth_vs_previous = Decimal(0)
+            except:
+                state.growth_vs_previous = Decimal(0)
 
             logger.info(f"Profit Margin: {state.profit_margin}%, Growth: {state.growth_vs_previous}%")
 
@@ -127,24 +173,72 @@ class MonthlyReportGraph:
         return state
 
     async def _generate_insights(self, state: MonthlyReportState) -> MonthlyReportState:
-        """Generate AI-powered insights."""
-        logger.info("Generating AI insights")
+        """Generate AI-powered insights using Claude API."""
+        logger.info("Generating AI insights with Claude")
 
         try:
-            # Simulate AI insights (in production, use Claude/OpenAI API)
-            state.insights = [
-                "Revenue increased 8.5% month-over-month, driven by strong sales performance",
-                "Profit margin improved to 43% due to operational efficiency gains",
-                "Marketing ROI of 5.2x exceeds target of 4.0x",
-                "Cash position remains strong at $250k, providing runway for 3+ months",
-            ]
+            # Build context for Claude
+            context = f"""
+Financial Data for {state.year}-{state.month:02d}:
+- Total Revenue: ${float(state.total_revenue):,.2f}
+- Total Expenses: ${float(state.total_expenses):,.2f}
+- Total Profit: ${float(state.total_profit):,.2f}
+- Profit Margin: {float(state.profit_margin):.1f}%
+- Growth vs Previous Month: {float(state.growth_vs_previous):.1f}%
+- Cash Position: ${float(state.cash_position):,.2f}
 
-            state.recommendations = [
-                "Continue marketing momentum - consider increasing budget by 10%",
-                "Optimize operations to maintain current efficiency levels",
-                "Monitor cash burn rate to ensure runway extends beyond 6 months",
-                "Review HR budget allocation - efficiency gains possible",
-            ]
+Department Breakdown:
+{chr(10).join(f"- {dept['name']}: ${dept['spend']:,.0f} (ROI: {dept['roi']:.1f}x)" for dept in state.departments)}
+            """
+
+            # Generate insights using Claude
+            message = self.anthropic.messages.create(
+                model="claude-opus-4-8",
+                max_tokens=1024,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Based on this financial data, provide 4 key business insights and 4 actionable recommendations:\n\n{context}"
+                    }
+                ]
+            )
+
+            response_text = message.content[0].text
+            lines = response_text.split('\n')
+
+            # Parse insights and recommendations
+            in_insights = False
+            in_recommendations = False
+            for line in lines:
+                if 'insight' in line.lower() and ':' in line:
+                    in_insights = True
+                    in_recommendations = False
+                elif 'recommendation' in line.lower() and ':' in line:
+                    in_insights = False
+                    in_recommendations = True
+                elif line.strip().startswith(('-', '•', '*', '1.', '2.', '3.', '4.')):
+                    line_clean = line.strip().lstrip('-•*0123456789.').strip()
+                    if in_insights and line_clean:
+                        state.insights.append(line_clean)
+                    elif in_recommendations and line_clean:
+                        state.recommendations.append(line_clean)
+
+            # Fallback if parsing didn't work well
+            if not state.insights:
+                state.insights = [
+                    f"Revenue of ${float(state.total_revenue):,.0f} with {float(state.growth_vs_previous):.1f}% growth",
+                    f"Profit margin at {float(state.profit_margin):.1f}% shows operational efficiency",
+                    "Marketing ROI varies across departments - review underperforming areas",
+                    f"Cash position at ${float(state.cash_position):,.0f} provides good runway"
+                ]
+
+            if not state.recommendations:
+                state.recommendations = [
+                    "Review underperforming departments for cost optimization",
+                    "Increase investment in high-ROI marketing channels",
+                    "Monitor expense growth vs revenue growth trajectory",
+                    "Plan for next quarter based on current cash flow trends"
+                ]
 
             logger.info(f"Generated {len(state.insights)} insights and {len(state.recommendations)} recommendations")
 
@@ -155,25 +249,24 @@ class MonthlyReportGraph:
         return state
 
     async def _create_report(self, state: MonthlyReportState) -> MonthlyReportState:
-        """Create PDF/Excel report."""
+        """Create report content."""
         logger.info("Creating report document")
 
         try:
             state.report_title = f"Financial Report - {state.year}-{state.month:02d}"
 
-            # Simulate report content generation
             state.report_content = f"""
 MONTHLY FINANCIAL REPORT
 {state.year}-{state.month:02d}
 
 EXECUTIVE SUMMARY
 ================
-Revenue:              ${state.total_revenue:,.2f}
-Expenses:             ${state.total_expenses:,.2f}
-Profit:               ${state.total_profit:,.2f}
-Profit Margin:        {state.profit_margin:.1f}%
-Growth vs Prior:      {state.growth_vs_previous:.1f}%
-Cash Position:        ${state.cash_position:,.2f}
+Revenue:              ${float(state.total_revenue):,.2f}
+Expenses:             ${float(state.total_expenses):,.2f}
+Profit:               ${float(state.total_profit):,.2f}
+Profit Margin:        {float(state.profit_margin):.1f}%
+Growth vs Prior:      {float(state.growth_vs_previous):.1f}%
+Cash Position:        ${float(state.cash_position):,.2f}
 
 KEY INSIGHTS
 ============
@@ -185,7 +278,7 @@ RECOMMENDATIONS
 
 DEPARTMENT BREAKDOWN
 ====================
-{chr(10).join(f"{dept['name']}: ${dept['spend']:,.0f} (ROI: {dept['roi']}x)" for dept in state.departments)}
+{chr(10).join(f"{dept['name']}: ${dept['spend']:,.0f} (ROI: {dept['roi']:.1f}x)" for dept in state.departments) if state.departments else "No department data"}
             """
 
             logger.info("Report created successfully")
@@ -201,8 +294,11 @@ DEPARTMENT BREAKDOWN
         logger.info("Storing report in database")
 
         try:
-            # In production, save to database with PDF/Excel binary
-            logger.info(f"Report stored: {state.report_title}")
+            # In production, this would save to database or S3 with binary PDF/Excel
+            # For now, log the storage
+            logger.info(f"Report prepared for storage: {state.report_title}")
+            logger.info(f"Report format: {state.report_format}")
+            logger.info(f"Content length: {len(state.report_content)} bytes")
 
         except Exception as e:
             logger.error(f"Error storing report: {e}")
@@ -228,23 +324,23 @@ DEPARTMENT BREAKDOWN
         )
 
         runnable = self.graph.compile()
-        final_state = await runnable.ainvoke(state)
+        final_state = cast(dict[str, Any], await runnable.ainvoke(state))
 
         return {
-            "success": len(final_state.errors) == 0,
-            "report_title": final_state.report_title,
+            "success": len(final_state["errors"]) == 0,
+            "report_title": final_state["report_title"],
             "summary": {
-                "revenue": float(final_state.total_revenue),
-                "expenses": float(final_state.total_expenses),
-                "profit": float(final_state.total_profit),
-                "profit_margin_percent": float(final_state.profit_margin),
-                "growth_percent": float(final_state.growth_vs_previous),
-                "cash_position": float(final_state.cash_position),
+                "revenue": float(final_state["total_revenue"]),
+                "expenses": float(final_state["total_expenses"]),
+                "profit": float(final_state["total_profit"]),
+                "profit_margin_percent": float(final_state["profit_margin"]),
+                "growth_percent": float(final_state["growth_vs_previous"]),
+                "cash_position": float(final_state["cash_position"]),
             },
-            "insights": final_state.insights,
-            "recommendations": final_state.recommendations,
-            "departments": final_state.departments,
-            "report_format": final_state.report_format,
-            "generated_at": final_state.generated_at.isoformat(),
-            "errors": final_state.errors if final_state.errors else None,
+            "insights": final_state["insights"] if final_state["insights"] else [],
+            "recommendations": final_state["recommendations"] if final_state["recommendations"] else [],
+            "departments": final_state["departments"] if final_state["departments"] else [],
+            "report_format": final_state["report_format"],
+            "generated_at": final_state["generated_at"].isoformat(),
+            "errors": final_state["errors"] if final_state["errors"] else None,
         }

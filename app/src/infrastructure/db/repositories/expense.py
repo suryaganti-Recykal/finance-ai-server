@@ -1,9 +1,8 @@
 """Expense repository for database operations."""
 
 from decimal import Decimal
-from typing import List
 
-from sqlalchemy import select, func
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.infrastructure.db.models.expense import ExpenseModel
@@ -35,8 +34,8 @@ class ExpenseRepositoryImpl:
     async def create_many_with_category(
         self,
         company_id: str,
-        transactions: List,
-        categories: List[str]
+        transactions: list,
+        categories: list[str]
     ) -> int:
         """Create multiple expenses with categories."""
         for tx, category in zip(transactions, categories):
@@ -46,7 +45,7 @@ class ExpenseRepositoryImpl:
                 source_transaction_id=tx.source_transaction_id,
                 amount=tx.amount,
                 description=tx.description,
-                date=tx.date,
+                date=tx.transaction_date,
                 category=category,
             )
             self.db.add(expense)

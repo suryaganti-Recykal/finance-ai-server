@@ -1,19 +1,21 @@
+from typing import Any
+
 from fastapi import APIRouter
 
-from src.api.deps import CurrentCompanyId, DbSession
 from src.agents.budget_monitoring_agent import BudgetMonitoringGraph
+from src.api.deps import CurrentCompanyId, DbSession
 from src.schemas.common import SuccessResponse
 
 router = APIRouter(prefix="/budgets", tags=["Budgets"])
 
 
-@router.get("", response_model=SuccessResponse[dict])
+@router.get("", response_model=SuccessResponse[dict[str, Any]])
 async def get_budget_summary(
     company_id: CurrentCompanyId,
     db: DbSession,
     fiscal_year: int,
     quarter: int | None = None,
-) -> SuccessResponse[dict]:
+) -> SuccessResponse[dict[str, Any]]:
     """Get budget status and alerts for all departments in a fiscal period.
 
     Uses LangGraph agent for budget monitoring and threshold checking.

@@ -8,14 +8,17 @@ Workflow:
 5. Report: Return dashboard state
 """
 
+import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from src.core.logging.logger import get_logger
+from src.infrastructure.db.repositories.dashboard import DashboardRepositoryImpl
+from src.infrastructure.db.session import AsyncSession
 
 logger = get_logger(__name__)
 
@@ -64,8 +67,10 @@ class DashboardOrchestrationState:
 class DashboardOrchestrationGraph:
     """LangGraph implementation of dashboard orchestration."""
 
-    def __init__(self) -> None:
+    def __init__(self, db: AsyncSession) -> None:
+        self.db = db
         self.graph = StateGraph(DashboardOrchestrationState)
+        self.dashboard_repo = DashboardRepositoryImpl(db)
         self._build_graph()
 
     def _build_graph(self) -> None:
@@ -84,18 +89,30 @@ class DashboardOrchestrationGraph:
         self.graph.add_edge("report", END)
 
     async def _coordinate_kpis(self, state: DashboardOrchestrationState) -> DashboardOrchestrationState:
-        """Coordinate all KPI calculations in parallel."""
+        """Coordinate all KPI calculations in parallel from real data."""
         logger.info(f"Orchestrating dashboard KPIs for {state.company_id}")
 
-        # In production, this would call the actual agent endpoints in parallel
-        # For now, we'll simulate with placeholder data
         try:
-            state.revenue = Decimal("150000")
-            state.expenses = Decimal("85000")
-            state.collections = Decimal("120000")
-            state.outstanding_receivables = Decimal("30000")
-            state.marketing_spend = Decimal("15000")
-            logger.info("KPIs collected from all agents")
+            import uuid
+            company_uuid = uuid.UUID(state.company_id) if isinstance(state.company_id, str) else state.company_id
+
+            # Run all data fetches in parallel
+            revenue_result, expenses_result, collections_result, marketing_result, receivables_result = await asyncio.gather(
+                self.dashboard_repo.get_total_revenue(company_uuid, state.start_date, state.end_date),
+                self.dashboard_repo.get_total_expenses(company_uuid, state.start_date, state.end_date),
+                self.dashboard_repo.get_total_collections(company_uuid, state.start_date, state.end_date),
+                self.dashboard_repo.get_total_marketing_spend(company_uuid, state.start_date, state.end_date),
+                self.dashboard_repo.get_outstanding_receivables(company_uuid),
+            )
+
+            state.revenue = Decimal(str(revenue_result or 0))
+            state.expenses = Decimal(str(expenses_result or 0))
+            state.collections = Decimal(str(collections_result or 0))
+            state.marketing_spend = Decimal(str(marketing_result or 0))
+            state.outstanding_receivables = Decimal(str(receivables_result or 0))
+
+            logger.info(f"KPIs collected: Revenue={state.revenue}, Expenses={state.expenses}, Collections={state.collections}")
+
         except Exception as e:
             logger.error(f"Error coordinating KPIs: {e}")
             state.errors.append(f"KPI coordination error: {str(e)}")
@@ -201,11 +218,16 @@ class DashboardOrchestrationGraph:
     async def run(
         self,
         company_id: str,
-        start_date: datetime,
-        end_date: datetime
+        start_date: datetime | None = None,
+        end_date: datetime | None = None
     ) -> dict[str, Any]:
         """Execute dashboard orchestration."""
         logger.info(f"Starting dashboard orchestration for {company_id}")
+
+        if not start_date:
+            start_date = datetime.utcnow() - timedelta(days=30)
+        if not end_date:
+            end_date = datetime.utcnow()
 
         state = DashboardOrchestrationState(
             company_id=company_id,
@@ -214,30 +236,30 @@ class DashboardOrchestrationGraph:
         )
 
         runnable = self.graph.compile()
-        final_state = await runnable.ainvoke(state)
+        final_state = cast(dict[str, Any], await runnable.ainvoke(state))
 
         return {
-            "success": len(final_state.errors) == 0,
+            "success": len(final_state["errors"]) == 0,
             "kpis": {
-                "revenue": float(final_state.revenue),
-                "expenses": float(final_state.expenses),
-                "profit": float(final_state.profit),
-                "profit_margin_percent": float(final_state.profit_margin),
-                "collections": float(final_state.collections),
-                "cash_balance": float(final_state.cash_balance),
-                "outstanding_receivables": float(final_state.outstanding_receivables),
-                "marketing_spend": float(final_state.marketing_spend),
-                "runway_days": final_state.runway_days,
+                "revenue": float(final_state["revenue"]),
+                "expenses": float(final_state["expenses"]),
+                "profit": float(final_state["profit"]),
+                "profit_margin_percent": float(final_state["profit_margin"]) if final_state["profit_margin"] > 0 else 0,
+                "collections": float(final_state["collections"]),
+                "cash_balance": float(final_state["cash_balance"]),
+                "outstanding_receivables": float(final_state["outstanding_receivables"]),
+                "marketing_spend": float(final_state["marketing_spend"]),
+                "runway_days": final_state["runway_days"],
             },
             "trends": {
-                "revenue": final_state.revenue_trend,
-                "expenses": final_state.expense_trend,
-                "profit": final_state.profit_trend,
+                "revenue": final_state["revenue_trend"] if final_state["revenue_trend"] else final_state["revenue_trend"],
+                "expenses": final_state["expense_trend"] if final_state["expense_trend"] else final_state["expense_trend"],
+                "profit": final_state["profit_trend"] if final_state["profit_trend"] else final_state["profit_trend"],
             },
             "alerts": {
-                "critical": final_state.critical_alerts,
-                "warnings": final_state.warnings,
+                "critical": final_state["critical_alerts"] if final_state["critical_alerts"] else [],
+                "warnings": final_state["warnings"] if final_state["warnings"] else [],
             },
-            "last_updated": final_state.last_updated.isoformat(),
-            "errors": final_state.errors if final_state.errors else None,
+            "last_updated": final_state["last_updated"].isoformat(),
+            "errors": final_state["errors"] if final_state["errors"] else None,
         }

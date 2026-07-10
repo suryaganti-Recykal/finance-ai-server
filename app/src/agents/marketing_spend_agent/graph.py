@@ -10,13 +10,13 @@ Workflow:
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from src.core.logging.logger import get_logger
-from src.infrastructure.db.repositories.marketing import MarketingRepositoryImpl
 from src.infrastructure.db.repositories.campaign import CampaignRepositoryImpl
+from src.infrastructure.db.repositories.marketing import MarketingRepositoryImpl
 from src.infrastructure.db.session import AsyncSession
 
 logger = get_logger(__name__)
@@ -279,13 +279,13 @@ Marketing Report:
         )
 
         runnable = self.graph.compile()
-        final_state = await runnable.ainvoke(state)
+        final_state = cast(dict[str, Any], await runnable.ainvoke(state))
 
         return {
-            "success": len(final_state.errors) == 0,
-            "total_spend": float(final_state.total_spend),
-            "total_revenue": float(final_state.total_revenue),
-            "overall_roas": float(final_state.overall_roas),
+            "success": len(final_state["errors"]) == 0,
+            "total_spend": float(final_state["total_spend"]),
+            "total_revenue": float(final_state["total_revenue"]),
+            "overall_roas": float(final_state["overall_roas"]),
             "campaigns": [
                 {
                     "campaign_id": c.campaign_id,
@@ -304,7 +304,7 @@ Marketing Report:
                         "roas": float(c.roas),
                     }
                 }
-                for c in final_state.campaign_metrics
+                for c in final_state["campaign_metrics"]
             ],
             "anomalies": [
                 {
@@ -315,9 +315,9 @@ Marketing Report:
                     "variance": float(a.variance),
                     "type": a.type,
                 }
-                for a in final_state.anomalies
+                for a in final_state["anomalies"]
             ],
-            "best_campaign": final_state.best_campaign,
-            "worst_campaign": final_state.worst_campaign,
-            "errors": final_state.errors if final_state.errors else None,
+            "best_campaign": final_state["best_campaign"],
+            "worst_campaign": final_state["worst_campaign"],
+            "errors": final_state["errors"] if final_state["errors"] else None,
         }

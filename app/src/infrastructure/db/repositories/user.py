@@ -1,7 +1,6 @@
 import uuid
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.users.entities.user import User
 from src.domain.users.repositories.user import UserRepository
@@ -45,3 +44,9 @@ class UserRepositoryImpl(SQLAlchemyRepository[UserModel, User], UserRepository):
         result = await self._session.execute(stmt)
         row = result.scalar_one_or_none()
         return self._to_entity(row) if row is not None else None
+
+    async def get_by_company(self, company_id: uuid.UUID) -> list[User]:
+        stmt = select(self.model).where(self.model.company_id == company_id)
+        result = await self._session.execute(stmt)
+        rows = result.scalars().all()
+        return [self._to_entity(r) for r in rows]

@@ -1,28 +1,29 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 from fastapi import APIRouter
 
-from src.api.deps import CurrentCompanyId, DbSession
 from src.agents.expense_collection_agent import ExpenseCollectionGraph
+from src.api.deps import CurrentCompanyId, DbSession
 from src.schemas.common import SuccessResponse
 
 router = APIRouter(prefix="/expenses", tags=["Expenses"])
 
 
-@router.post("/sync", response_model=SuccessResponse[dict])
+@router.post("/sync", response_model=SuccessResponse[dict[str, Any]])
 async def sync_expenses(
     company_id: CurrentCompanyId,
     db: DbSession,
     start_date: datetime | None = None,
     end_date: datetime | None = None,
-) -> SuccessResponse[dict]:
+) -> SuccessResponse[dict[str, Any]]:
     """Sync expenses from all configured sources (Zoho, Meta, Google Ads, Razorpay, Bank, CC).
 
     Called by n8n scheduler daily, or manually by admins.
     Uses LangGraph agent for orchestration.
     """
     # Set defaults
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     end = end_date or now
     start = start_date or (now - timedelta(days=7))
 

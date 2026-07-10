@@ -2,7 +2,7 @@ from datetime import datetime
 
 from fastapi import APIRouter
 
-from src.api.deps import CurrentCompanyId, DbSession, Pagination
+from src.api.deps import CurrentCompanyId, DbSession
 from src.application.dashboard.use_cases.get_dashboard import (
     GetDashboardInput,
     GetDashboardUseCase,

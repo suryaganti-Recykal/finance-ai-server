@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
 from src.application.shared.use_case import UseCase
@@ -29,7 +29,7 @@ class GetDashboardUseCase(UseCase[GetDashboardInput, GetDashboardOutput]):
         self.dashboard_repo = dashboard_repo
 
     async def execute(self, input_data: GetDashboardInput) -> GetDashboardOutput:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         period_end = input_data.end_date or now
         period_start = input_data.start_date or (now - timedelta(days=30))
 

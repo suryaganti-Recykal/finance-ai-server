@@ -20,7 +20,7 @@ class ZohoConnector(Connector):
         pass
 
     async def fetch_transactions(
-        self, start_date: datetime, end_date: datetime
+        self, company_id: str, start_date: datetime, end_date: datetime
     ) -> list[Transaction]:
         """Fetch expenses from Zoho Books."""
         # TODO: Call Zoho API with date range

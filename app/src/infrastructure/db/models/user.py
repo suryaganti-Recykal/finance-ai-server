@@ -1,10 +1,11 @@
 import uuid
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
-from sqlalchemy import String, ForeignKey, DateTime
+from sqlalchemy import DateTime, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.infrastructure.db.base import Base
+from src.infrastructure.db.models.company import CompanyModel
 
 
 class UserModel(Base):
@@ -17,7 +18,7 @@ class UserModel(Base):
     last_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
     role: Mapped[str] = mapped_column(String(50), default="member", nullable=False)
     is_active: Mapped[bool] = mapped_column(default=True, index=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False)
 
     company: Mapped["CompanyModel"] = relationship("CompanyModel", back_populates="users")
 

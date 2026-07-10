@@ -1,4 +1,3 @@
-import uuid
 from dataclasses import dataclass
 
 from src.domain.shared.entities.base import Entity

@@ -3,7 +3,6 @@ from dataclasses import dataclass
 
 from src.application.shared.use_case import UseCase
 from src.core.exceptions.base import NotFoundException
-from src.domain.companies.entities.company import Company
 from src.domain.companies.repositories.company import CompanyRepository
 
 

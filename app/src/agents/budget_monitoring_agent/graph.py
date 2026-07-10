@@ -11,9 +11,9 @@ Workflow:
 from dataclasses import dataclass, field
 from datetime import datetime
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
-from langgraph.graph import StateGraph, END
+from langgraph.graph import END, StateGraph
 
 from src.core.logging.logger import get_logger
 from src.infrastructure.db.repositories.budget import BudgetRepositoryImpl
@@ -108,8 +108,10 @@ class BudgetMonitoringGraph:
         logger.info(f"Fetching budgets for {state.company_id}, FY {state.fiscal_year}")
 
         try:
-            budgets = await self.budget_repo.get_by_fiscal_year(
-                state.company_id,
+            import uuid
+            comp_uuid = uuid.UUID(state.company_id) if isinstance(state.company_id, str) else state.company_id
+            budgets = await self.budget_repo.get_all_budgets(
+                comp_uuid,
                 state.fiscal_year,
                 state.quarter
             )
@@ -271,15 +273,15 @@ Budget Report (FY {state.fiscal_year}):
         )
 
         runnable = self.graph.compile()
-        final_state = await runnable.ainvoke(state)
+        final_state = cast(dict[str, Any], await runnable.ainvoke(state))
 
         return {
-            "success": len(final_state.errors) == 0,
-            "fiscal_year": final_state.fiscal_year,
-            "quarter": final_state.quarter,
-            "total_budgeted": float(final_state.total_budgeted),
-            "total_spent": float(final_state.total_spent),
-            "overall_utilization_percent": float(final_state.overall_utilization_percent),
+            "success": len(final_state["errors"]) == 0,
+            "fiscal_year": final_state["fiscal_year"],
+            "quarter": final_state["quarter"],
+            "total_budgeted": float(final_state["total_budgeted"]),
+            "total_spent": float(final_state["total_spent"]),
+            "overall_utilization_percent": float(final_state["overall_utilization_percent"]),
             "budgets": [
                 {
                     "budget_id": s.budget_id,
@@ -293,7 +295,7 @@ Budget Report (FY {state.fiscal_year}):
                     "threshold_90_triggered": s.threshold_90_triggered,
                     "threshold_100_triggered": s.threshold_100_triggered,
                 }
-                for s in final_state.budget_statuses
+                for s in final_state["budget_statuses"]
             ],
             "active_alerts": [
                 {
@@ -307,8 +309,8 @@ Budget Report (FY {state.fiscal_year}):
                     "alert_level": a.alert_level,
                     "triggered_at": a.triggered_at.isoformat(),
                 }
-                for a in final_state.alerts
+                for a in final_state["alerts"]
             ],
-            "alert_count": final_state.alert_count,
-            "errors": final_state.errors if final_state.errors else None,
+            "alert_count": final_state["alert_count"],
+            "errors": final_state["errors"] if final_state["errors"] else None,
         }

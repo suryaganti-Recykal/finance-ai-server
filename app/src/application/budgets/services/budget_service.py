@@ -1,8 +1,7 @@
 import uuid
-from datetime import datetime
 from decimal import Decimal
 
-from src.domain.budgets.entities.budget import BudgetAlert, BudgetStatus, BudgetSummary
+from src.domain.budgets.entities.budget import BudgetStatus, BudgetSummary
 from src.domain.budgets.repositories.budget import BudgetRepository
 
 

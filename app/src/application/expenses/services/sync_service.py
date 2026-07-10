@@ -1,7 +1,6 @@
 import uuid
 from dataclasses import dataclass, field
 from datetime import datetime
-from decimal import Decimal
 
 from src.infrastructure.connectors.base import Connector, ConnectorError, Transaction
 
@@ -43,7 +42,7 @@ class ExpenseSyncService:
             try:
                 source = await connector.get_source_name()
                 await connector.authenticate()
-                transactions = await connector.fetch_transactions(start_date, end_date)
+                transactions = await connector.fetch_transactions(company_id, start_date, end_date)
                 all_transactions.extend(transactions)
             except ConnectorError as e:
                 errors.append(f"{source or 'Unknown'}: {str(e)}")

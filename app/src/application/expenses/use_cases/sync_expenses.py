@@ -1,14 +1,12 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.application.expenses.services.sync_service import ExpenseSyncService, SyncResult
+from src.application.expenses.services.sync_service import ExpenseSyncService
 from src.application.shared.use_case import UseCase
 from src.infrastructure.connectors import (
-    BankCSVConnector,
-    CreditCardConnector,
     GoogleAdsConnector,
     MetaConnector,
     RazorpayConnector,
@@ -40,7 +38,7 @@ class SyncExpensesUseCase(UseCase[SyncExpensesInput, SyncExpensesOutput]):
         self.db = db
 
     async def execute(self, input_data: SyncExpensesInput) -> SyncExpensesOutput:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         end_date = input_data.end_date or now
         start_date = input_data.start_date or (now - timedelta(days=30))
 

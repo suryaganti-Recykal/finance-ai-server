@@ -1,7 +1,5 @@
-import uuid
 
 from sqlalchemy import select
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.domain.companies.entities.company import Company
 from src.domain.companies.repositories.company import CompanyRepository

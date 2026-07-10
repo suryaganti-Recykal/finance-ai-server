@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from src.application.shared.use_case import UseCase
 from src.domain.dashboard.entities.metrics import Trend
@@ -28,7 +28,7 @@ class GetTrendsUseCase(UseCase[GetTrendsInput, GetTrendsOutput]):
         self.dashboard_repo = dashboard_repo
 
     async def execute(self, input_data: GetTrendsInput) -> GetTrendsOutput:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         period_end = input_data.end_date or now
         period_start = input_data.start_date or (now - timedelta(days=90))
 

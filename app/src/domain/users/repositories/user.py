@@ -12,3 +12,8 @@ class UserRepository(AbstractRepository[User]):
     async def get_by_email(self, company_id: uuid.UUID, email: str) -> User | None:
         """Get user by email within a company."""
         ...
+
+    @abstractmethod
+    async def get_by_company(self, company_id: uuid.UUID) -> list[User]:
+        """Get all users within a company."""
+        ...

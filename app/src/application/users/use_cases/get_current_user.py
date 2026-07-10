@@ -4,7 +4,6 @@ from datetime import datetime
 
 from src.application.shared.use_case import UseCase
 from src.core.exceptions.base import NotFoundException
-from src.domain.users.entities.user import User
 from src.domain.users.repositories.user import UserRepository
 
 

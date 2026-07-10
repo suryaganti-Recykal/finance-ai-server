@@ -1,7 +1,6 @@
 """Campaign repository for database operations."""
 
 from datetime import datetime
-from typing import List
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -20,7 +19,7 @@ class CampaignRepositoryImpl:
         company_id: str,
         start_date: datetime,
         end_date: datetime
-    ) -> List[CampaignModel]:
+    ) -> list[CampaignModel]:
         """Get campaigns within a date range."""
         query = select(CampaignModel).where(
             CampaignModel.company_id == company_id,

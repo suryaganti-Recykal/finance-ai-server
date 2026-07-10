@@ -1,4 +1,3 @@
-import uuid
 from abc import abstractmethod
 
 from src.domain.companies.entities.company import Company

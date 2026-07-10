@@ -19,7 +19,7 @@ class GoogleAdsConnector(Connector):
         pass
 
     async def fetch_transactions(
-        self, start_date: datetime, end_date: datetime
+        self, company_id: str, start_date: datetime, end_date: datetime
     ) -> list[Transaction]:
         """Fetch ad spend from Google Ads."""
         # TODO: Call Google Ads API

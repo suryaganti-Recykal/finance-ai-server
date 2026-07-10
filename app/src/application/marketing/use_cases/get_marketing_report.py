@@ -1,6 +1,6 @@
 import uuid
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from src.application.marketing.services.calculation_service import MarketingMetricsService
 from src.application.shared.use_case import UseCase
@@ -22,7 +22,7 @@ class GetMarketingReportUseCase(UseCase[GetMarketingReportInput, MarketingReport
         self.marketing_repo = marketing_repo
 
     async def execute(self, input_data: GetMarketingReportInput) -> MarketingReport:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         end_date = input_data.end_date or now
         start_date = input_data.start_date or (now - timedelta(days=30))
 
