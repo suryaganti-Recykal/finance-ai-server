@@ -69,3 +69,64 @@ class BudgetUtilizationBreakdownSchema(BaseModel):
 
 class CampaignSpendBreakdownSchema(BaseModel):
     data: list[CampaignSpendSchema]
+
+
+# Enhanced schemas for presentation UI
+class HealthIndicator(BaseModel):
+    """Health status for a metric."""
+
+    status: str  # "healthy", "warning", "critical"
+    message: str
+    percentage: Decimal | None = None
+
+
+class ExpenseBreakdown(BaseModel):
+    """Expense breakdown by category."""
+
+    category: str
+    amount: Decimal
+    percentage: float
+    transaction_count: int
+    trend: str  # "up", "down", "stable"
+
+
+class BudgetSummary(BaseModel):
+    """Department budget summary."""
+
+    department: str
+    q1: Decimal
+    q2: Decimal
+    q3: Decimal
+    q4: Decimal
+    total: Decimal
+    spent: Decimal
+    remaining: Decimal
+    health: HealthIndicator
+
+
+class EnhancedDashboard(BaseModel):
+    """Complete dashboard data for UI presentation."""
+
+    company_id: str
+    timestamp: datetime
+
+    # Summary metrics
+    total_expenses: Decimal
+    total_revenue: Decimal
+    net_profit: Decimal
+    budget_utilization: float
+
+    # Breakdowns
+    expense_breakdown: list[ExpenseBreakdown]
+    budget_summary: list[BudgetSummary]
+    top_campaigns: list[CampaignSpendSchema]
+
+    # Health indicators
+    overall_health: HealthIndicator
+    budget_health: HealthIndicator
+    expense_health: HealthIndicator
+
+    # Trends
+    revenue_trend: list[TrendPointSchema]
+    expense_trend: list[TrendPointSchema]
+    budget_trend: list[TrendPointSchema]
