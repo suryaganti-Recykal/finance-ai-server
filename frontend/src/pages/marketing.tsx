@@ -5,7 +5,7 @@ import { Layout } from '@/components/Layout';
 import { KPICard } from '@/components/KPICard';
 import { BarChartComponent, PieChartComponent, LineChartComponent } from '@/components/Chart';
 import { dashboardAPI } from '@/lib/api';
-import { DollarSign, Layers, TrendingUp, AlertCircle } from 'lucide-react';
+import { DollarSign, Layers, TrendingUp, AlertCircle, ExternalLink, ArrowUpRight } from 'lucide-react';
 
 interface LiveSpendSummary {
   total_spend: number;
@@ -15,14 +15,7 @@ interface LiveSpendSummary {
   by_type: Array<{ name: string; value: number }>;
   by_business_unit: Array<{ name: string; value: number }>;
   monthly_trend: Array<{ month: string; spend: number }>;
-  top_line_items: Array<{
-    team: string;
-    sub_team: string;
-    segment: string;
-    type: string;
-    month: string;
-    total: number;
-  }>;
+  top_line_items: Array<{ team: string; sub_team: string; segment: string; type: string; month: string; total: number }>;
 }
 
 export default function MarketingPage() {
@@ -48,10 +41,10 @@ export default function MarketingPage() {
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center py-12">
+        <div className="flex h-64 items-center justify-center">
           <div className="text-center">
-            <div className="mb-4 inline-block h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-primary-600"></div>
-            <p className="text-gray-600">Loading live data from Google Sheets...</p>
+            <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" />
+            <p className="text-sm font-medium text-slate-500">Fetching live data from Google Sheets…</p>
           </div>
         </div>
       </Layout>
@@ -61,110 +54,99 @@ export default function MarketingPage() {
   if (error || !data) {
     return (
       <Layout>
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-          <div className="flex gap-3">
-            <AlertCircle className="text-red-600" size={24} />
-            <div>
-              <h3 className="font-semibold text-red-900">Error loading live spend data</h3>
-              <p className="text-sm text-red-800">{error || 'No data returned'}</p>
-            </div>
+        <div className="glass-card flex items-start gap-4 p-5 border border-red-100 !bg-red-50">
+          <AlertCircle className="mt-0.5 text-red-500 shrink-0" size={20} />
+          <div>
+            <p className="font-semibold text-red-900">Could not load live spend data</p>
+            <p className="mt-1 text-sm text-red-700">{error || 'No data returned'}</p>
           </div>
         </div>
       </Layout>
     );
   }
 
-  const monthlyChartData = data.monthly_trend.map((m) => ({ name: m.month, value: m.spend }));
+  const monthlyChartData = data.monthly_trend.map(m => ({ name: m.month, value: m.spend }));
 
   return (
     <Layout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
+
+        {/* Page header */}
+        <div className="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Marketing Spend</h1>
-            <p className="mt-2 text-gray-600">
-              Live data · {data.record_count} line items ·{' '}
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Marketing Spend</h1>
+            <p className="mt-1 text-sm text-slate-400">
+              {data.record_count} line items ·{' '}
               <a
                 href="https://docs.google.com/spreadsheets/d/1o_LPg73GPCr34rLLH84TGmXCx6I25J3b1pM1-AIonYc"
-                target="_blank"
-                rel="noreferrer"
-                className="text-primary-600 hover:underline"
+                target="_blank" rel="noreferrer"
+                className="inline-flex items-center gap-1 text-indigo-500 hover:text-indigo-700 font-medium transition-colors"
               >
-                source sheet
+                source sheet <ExternalLink size={12} />
               </a>
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
-            <span className="h-2 w-2 rounded-full bg-green-500" />
-            Live
+          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-emerald-50 border border-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700">
+            <span className="animate-pulse-dot h-2 w-2 rounded-full bg-emerald-500" />
+            Live · Updates on reload
           </span>
         </div>
 
         {/* KPI Cards */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <KPICard
-            title="Total Spend"
-            value={`$${(data.total_spend / 1000).toFixed(1)}K`}
-            icon={<DollarSign size={32} />}
-          />
-          <KPICard
-            title="Line Items"
-            value={data.record_count}
-            icon={<Layers size={32} />}
-          />
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KPICard title="Total Spend" value={`$${(data.total_spend / 1000).toFixed(1)}K`} icon={<DollarSign size={18} />} colorIndex={0} />
+          <KPICard title="Line Items"  value={data.record_count}                              icon={<Layers size={18} />}    colorIndex={1} />
           <KPICard
             title="Top Team"
-            value={data.by_team[0]?.name || '-'}
-            unit={`$${((data.by_team[0]?.value || 0) / 1000).toFixed(1)}K`}
-            icon={<TrendingUp size={32} />}
+            value={data.by_team[0]?.name || '—'}
+            unit={`$${((data.by_team[0]?.value || 0) / 1000).toFixed(1)}K spend`}
+            icon={<TrendingUp size={18} />} colorIndex={2}
           />
           <KPICard
             title="Top Business Unit"
-            value={data.by_business_unit[0]?.name || '-'}
-            unit={`$${((data.by_business_unit[0]?.value || 0) / 1000).toFixed(1)}K`}
-            icon={<TrendingUp size={32} />}
+            value={data.by_business_unit[0]?.name || '—'}
+            unit={`$${((data.by_business_unit[0]?.value || 0) / 1000).toFixed(1)}K spend`}
+            icon={<ArrowUpRight size={18} />} colorIndex={3}
           />
         </div>
 
-        {/* Charts */}
-        <div className="grid gap-6 lg:grid-cols-2">
-          <PieChartComponent data={data.by_segment} title="Spend by Segment" />
+        {/* Charts row 1 */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          <PieChartComponent data={data.by_segment}      title="Spend by Segment" />
           <PieChartComponent data={data.by_business_unit} title="Spend by Business Unit" />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-2">
-          <BarChartComponent data={data.by_team} title="Spend by Team" />
+        {/* Charts row 2 */}
+        <div className="grid gap-5 lg:grid-cols-2">
+          <BarChartComponent data={data.by_team}    title="Spend by Team" />
           <LineChartComponent data={monthlyChartData} title="Monthly Spend Trend" />
         </div>
 
-        {/* Top Line Items Table */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <h3 className="mb-4 text-lg font-semibold text-gray-900">Top 10 Line Items</h3>
+        {/* Top Line Items table */}
+        <div className="glass-card p-6">
+          <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-slate-400">Top 10 Line Items</h3>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-2 py-2 text-left font-medium text-gray-600">Team</th>
-                  <th className="px-2 py-2 text-left font-medium text-gray-600">Sub-Team</th>
-                  <th className="px-2 py-2 text-left font-medium text-gray-600">Segment</th>
-                  <th className="px-2 py-2 text-left font-medium text-gray-600">Type</th>
-                  <th className="px-2 py-2 text-left font-medium text-gray-600">Month</th>
-                  <th className="px-2 py-2 text-right font-medium text-gray-600">Total</th>
+                <tr className="border-b border-slate-100">
+                  {['Team','Sub-Team','Segment','Type','Month','Total'].map(h => (
+                    <th key={h} className={`py-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider ${h === 'Total' ? 'text-right' : 'text-left'}`}>{h}</th>
+                  ))}
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-slate-50">
                 {data.top_line_items.map((item, idx) => (
-                  <tr key={idx} className="border-b border-gray-100 hover:bg-gray-50">
-                    <td className="px-2 py-3">{item.team}</td>
-                    <td className="px-2 py-3 text-gray-600">{item.sub_team}</td>
-                    <td className="px-2 py-3">
-                      <span className="inline-block rounded-full bg-blue-100 px-3 py-1 text-xs font-medium text-blue-800">
+                  <tr key={idx} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="px-3 py-3 font-semibold text-slate-800">{item.team}</td>
+                    <td className="px-3 py-3 text-slate-500">{item.sub_team}</td>
+                    <td className="px-3 py-3">
+                      <span className="inline-flex items-center rounded-full bg-indigo-50 px-2.5 py-0.5 text-xs font-semibold text-indigo-700 border border-indigo-100">
                         {item.segment}
                       </span>
                     </td>
-                    <td className="px-2 py-3 text-gray-600">{item.type}</td>
-                    <td className="px-2 py-3 text-gray-600">{item.month}</td>
-                    <td className="px-2 py-3 text-right font-medium">
+                    <td className="px-3 py-3 text-slate-500">{item.type}</td>
+                    <td className="px-3 py-3 text-slate-500">{item.month}</td>
+                    <td className="px-3 py-3 text-right font-bold text-slate-900">
                       ${item.total.toLocaleString('en-US')}
                     </td>
                   </tr>

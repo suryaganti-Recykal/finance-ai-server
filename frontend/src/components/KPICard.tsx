@@ -1,7 +1,10 @@
-/**KPI Card Component */
+/**Premium KPI Card Component */
 
-import { TrendingUp, TrendingDown } from 'lucide-react';
-import clsx from 'clsx';
+import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
+import { ReactNode } from 'react';
+
+const iconGradients = ['kpi-icon-indigo', 'kpi-icon-emerald', 'kpi-icon-amber', 'kpi-icon-rose', 'kpi-icon-cyan'];
+let cardIndex = 0;
 
 interface KPICardProps {
   title: string;
@@ -9,7 +12,8 @@ interface KPICardProps {
   unit?: string;
   trend?: 'up' | 'down' | 'stable';
   trendPercent?: number;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
+  colorIndex?: number;
 }
 
 export function KPICard({
@@ -19,32 +23,37 @@ export function KPICard({
   trend,
   trendPercent = 0,
   icon,
+  colorIndex = 0,
 }: KPICardProps) {
-  const trendColor =
-    trend === 'up'
-      ? 'text-green-600'
-      : trend === 'down'
-        ? 'text-red-600'
-        : 'text-gray-600';
+  const trendConfig = {
+    up:     { color: 'text-emerald-600', bg: 'bg-emerald-50', Icon: TrendingUp,   label: 'increase' },
+    down:   { color: 'text-red-500',     bg: 'bg-red-50',     Icon: TrendingDown, label: 'decrease' },
+    stable: { color: 'text-slate-500',   bg: 'bg-slate-50',   Icon: Minus,        label: 'stable'   },
+  };
+  const tc = trend ? trendConfig[trend] : null;
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+    <div className="glass-card p-5 flex flex-col gap-3">
       <div className="flex items-start justify-between">
-        <div className="flex-1">
-          <p className="text-sm font-medium text-gray-600">{title}</p>
-          <p className="mt-2 flex items-baseline gap-2">
-            <span className="text-3xl font-bold text-gray-900">{value}</span>
-            {unit && <span className="text-sm text-gray-600">{unit}</span>}
-          </p>
-          {trend && trendPercent !== 0 && (
-            <div className={clsx('mt-2 flex items-center gap-1 text-sm font-medium', trendColor)}>
-              {trend === 'up' ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-              <span>{Math.abs(trendPercent)}% {trend === 'up' ? 'increase' : 'decrease'}</span>
-            </div>
-          )}
-        </div>
-        {icon && <div className="text-gray-400">{icon}</div>}
+        <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{title}</p>
+        {icon && (
+          <div className={`${iconGradients[colorIndex % iconGradients.length]} flex h-9 w-9 items-center justify-center rounded-xl text-white shadow-md`}>
+            {icon}
+          </div>
+        )}
       </div>
+
+      <div>
+        <p className="text-3xl font-extrabold text-slate-900 leading-none tracking-tight">{value}</p>
+        {unit && <p className="mt-1 text-sm font-medium text-slate-500">{unit}</p>}
+      </div>
+
+      {tc && trendPercent !== 0 && (
+        <div className={`inline-flex w-fit items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${tc.bg} ${tc.color}`}>
+          <tc.Icon size={12} />
+          {Math.abs(trendPercent)}% {tc.label}
+        </div>
+      )}
     </div>
   );
 }
