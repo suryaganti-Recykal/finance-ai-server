@@ -17,8 +17,5 @@ COPY src/ src/
 COPY alembic/ alembic/
 COPY alembic.ini .
 
-# Expose port
-EXPOSE 8000
-
 # Run application
 CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}
