@@ -104,7 +104,7 @@ export default function MarketingPage() {
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Total Spend"
-            value={`₹${(data.total_spend / 100000).toFixed(1)}L`}
+            value={`$${(data.total_spend / 1000).toFixed(1)}K`}
             icon={<DollarSign size={32} />}
           />
           <KPICard
@@ -115,13 +115,13 @@ export default function MarketingPage() {
           <KPICard
             title="Top Team"
             value={data.by_team[0]?.name || '-'}
-            unit={`₹${((data.by_team[0]?.value || 0) / 100000).toFixed(1)}L`}
+            unit={`$${((data.by_team[0]?.value || 0) / 1000).toFixed(1)}K`}
             icon={<TrendingUp size={32} />}
           />
           <KPICard
             title="Top Business Unit"
             value={data.by_business_unit[0]?.name || '-'}
-            unit={`₹${((data.by_business_unit[0]?.value || 0) / 100000).toFixed(1)}L`}
+            unit={`$${((data.by_business_unit[0]?.value || 0) / 1000).toFixed(1)}K`}
             icon={<TrendingUp size={32} />}
           />
         </div>
@@ -165,7 +165,7 @@ export default function MarketingPage() {
                     <td className="px-2 py-3 text-gray-600">{item.type}</td>
                     <td className="px-2 py-3 text-gray-600">{item.month}</td>
                     <td className="px-2 py-3 text-right font-medium">
-                      ₹{item.total.toLocaleString('en-IN')}
+                      ${item.total.toLocaleString('en-US')}
                     </td>
                   </tr>
                 ))}
