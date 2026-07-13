@@ -50,8 +50,11 @@ export function Layout({ children }: { children: ReactNode }) {
 
           {/* Footer */}
           <div className="border-t border-gray-700 p-4 text-sm text-gray-400">
-            <p>Demo Mode</p>
-            <p className="text-xs">Company: demo-company-001</p>
+            <p className="flex items-center gap-1">
+              <span className="inline-block h-2 w-2 rounded-full bg-green-500"></span>
+              Live Data · Recykal
+            </p>
+            <p className="text-xs mt-1">Marketing: Google Sheets</p>
           </div>
         </div>
       </div>

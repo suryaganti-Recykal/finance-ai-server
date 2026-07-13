@@ -28,6 +28,7 @@ RUN npm ci --omit=dev
 
 # Copy built application from builder
 COPY --from=builder /app/.next ./.next
+# Copy public dir (may be empty but must exist)
 COPY --from=builder /app/public ./public
 COPY next.config.js .
 
@@ -36,6 +37,7 @@ EXPOSE 3000
 
 # Environment
 ENV NODE_ENV=production
+ENV PORT=3000
 
 # Run application
-CMD ["npm", "start"]
+CMD npm start

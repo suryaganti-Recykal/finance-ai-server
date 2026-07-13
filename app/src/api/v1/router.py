@@ -9,6 +9,7 @@ from src.api.v1.routers import (
     expenses,
     forecasts,
     health,
+    live_spend,
     marketing,
     notifications,
     reports,
@@ -28,4 +29,5 @@ api_router.include_router(forecasts.router)
 api_router.include_router(ai.router)
 api_router.include_router(demo.router)
 api_router.include_router(sheets_auth.router)
+api_router.include_router(live_spend.router)
 api_router.include_router(health.router)

@@ -75,6 +75,10 @@ class Settings(BaseSettings):
     GOOGLE_SHEETS_OAUTH_TOKEN: str | None = None
     USE_SHEETS_FOR_DEMO: bool = True
 
+    # Live marketing spend sheet (public CSV export, no OAuth required)
+    MARKETING_SHEET_ID: str = "1o_LPg73GPCr34rLLH84TGmXCx6I25J3b1pM1-AIonYc"
+    MARKETING_SHEET_GID: str = "58607866"
+
     @field_validator("CORS_ORIGINS", mode="before")
     @classmethod
     def _split_cors_origins(cls, value: str | list[str]) -> list[str]:
