@@ -8,10 +8,10 @@ import { dashboardAPI } from '@/lib/api';
 import { DollarSign, Hash, TrendingUp, Megaphone, AlertCircle, Calendar } from 'lucide-react';
 
 interface Expense  { id: string; description: string; amount: number; category: string; date: string; merchant: string; source: string; }
-interface Campaign { name: string; platform: string; spend: string; impressions: number; clicks: number; conversions: number; roi: number; start_date: string; }
 interface Budget   { department: string; q1: string; q2: string; q3: string; q4: string; total: string; spent: string; remaining: string; status: string; }
 interface Forecast { month: string; forecasted_expense: string; confidence: number; trend: string; }
-interface DemoData { expenses: Expense[]; marketing: Campaign[]; budgets: Budget[]; forecasts: Forecast[]; }
+interface DemoData { expenses: Expense[]; budgets: Budget[]; forecasts: Forecast[]; }
+interface LiveMarketing { total_spend: number; by_segment: { name: string; value: number }[]; }
 
 function formatDate(iso: string) {
   try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
@@ -23,12 +23,19 @@ function fmtUSD(val: number) {
 
 export default function DashboardPage() {
   const [data, setData]       = useState<DemoData | null>(null);
+  const [liveMarketing, setLiveMarketing] = useState<LiveMarketing | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError]     = useState<string | null>(null);
 
   useEffect(() => {
-    dashboardAPI.getDemoData()
-      .then(r => setData(r.data.data))
+    Promise.all([
+      dashboardAPI.getDemoData(),
+      dashboardAPI.getLiveMarketingSpend()
+    ])
+      .then(([demoRes, liveRes]) => {
+        setData(demoRes.data.data);
+        setLiveMarketing(liveRes.data.data);
+      })
       .catch(e => setError(e.message || 'Failed to load'))
       .finally(() => setLoading(false));
   }, []);
@@ -58,7 +65,7 @@ export default function DashboardPage() {
 
   // ── Derived metrics (all values correctly typed) ──────────────────────────
   const totalExpenses   = data.expenses.reduce((s, e) => s + (e.amount || 0), 0);
-  const totalMarketing  = data.marketing.reduce((s, c) => s + parseFloat(c.spend || '0'), 0);
+  const totalMarketing  = liveMarketing ? liveMarketing.total_spend : 0;
   const expenseCount    = data.expenses.length;
   const avgExpense      = expenseCount > 0 ? totalExpenses / expenseCount : 0;
   const totalBudget     = data.budgets.reduce((s, b) => s + parseFloat(b.total || '0'), 0);
@@ -73,10 +80,7 @@ export default function DashboardPage() {
     return acc;
   }, []);
 
-  const marketingByPlatform = data.marketing.map(c => ({
-    name: c.platform,
-    value: parseFloat(c.spend || '0'),
-  }));
+  const marketingByPlatform = liveMarketing ? liveMarketing.by_segment : [];
 
   const forecastChartData = data.forecasts.map(f => ({
     name: f.month.split(' ')[0], // "July"
@@ -105,7 +109,7 @@ export default function DashboardPage() {
         {/* Charts row 1 */}
         <div className="grid gap-5 lg:grid-cols-2">
           <PieChartComponent  data={expensesByCategory}  title="Expenses by Category" />
-          <BarChartComponent  data={marketingByPlatform} title="Marketing Spend by Platform" />
+          <BarChartComponent  data={marketingByPlatform} title="Live Marketing Spend by Segment ($)" />
         </div>
 
         {/* Forecast chart */}

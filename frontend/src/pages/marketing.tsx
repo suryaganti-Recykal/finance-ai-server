@@ -1,11 +1,11 @@
-/**Marketing Spend Page — live data from Recykal Google Sheet (values in INR ₹) */
+/**Marketing Spend Page — live data from Recykal Google Sheet */
 
 import { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { KPICard } from '@/components/KPICard';
 import { BarChartComponent, PieChartComponent, LineChartComponent } from '@/components/Chart';
 import { dashboardAPI } from '@/lib/api';
-import { IndianRupee, Layers, TrendingUp, Building2, AlertCircle, ExternalLink } from 'lucide-react';
+import { DollarSign, Layers, TrendingUp, Building2, AlertCircle, ExternalLink } from 'lucide-react';
 
 interface NameValue  { name: string; value: number; [key: string]: string | number | undefined; }
 interface LineItem   { team: string; sub_team: string; segment: string; type: string; month: string; total: number; }
@@ -16,15 +16,14 @@ interface LiveSpend  {
   top_line_items: LineItem[];
 }
 
-/** Format Indian Rupee — crore / lakh / plain */
-function fmtINR(val: number, short = false): string {
+/** Format USD — millions / thousands / plain */
+function fmtUSD(val: number, short = false): string {
   if (short) {
-    if (val >= 10_000_000) return `₹${(val / 10_000_000).toFixed(2)}Cr`;
-    if (val >= 100_000)    return `₹${(val / 100_000).toFixed(2)}L`;
-    if (val >= 1_000)      return `₹${(val / 1_000).toFixed(1)}K`;
-    return `₹${val.toFixed(0)}`;
+    if (val >= 1_000_000) return `$${(val / 1_000_000).toFixed(2)}M`;
+    if (val >= 1_000)     return `$${(val / 1_000).toFixed(1)}K`;
+    return `$${val.toFixed(0)}`;
   }
-  return `₹${val.toLocaleString('en-IN')}`;
+  return `$${val.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
 }
 
 const SEGMENT_COLORS: Record<string, string> = {
@@ -95,7 +94,7 @@ export default function MarketingPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Marketing Spend</h1>
             <p className="mt-1 text-sm text-slate-400">
               {data.record_count} line items · All values in{' '}
-              <span className="font-semibold text-slate-600">Indian Rupees (₹)</span> ·{' '}
+              <span className="font-semibold text-slate-600">US Dollars ($)</span> ·{' '}
               <a
                 href="https://docs.google.com/spreadsheets/d/1o_LPg73GPCr34rLLH84TGmXCx6I25J3b1pM1-AIonYc/edit?usp=sharing"
                 target="_blank" rel="noreferrer"
@@ -115,9 +114,9 @@ export default function MarketingPage() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <KPICard
             title="Total Spend"
-            value={fmtINR(data.total_spend, true)}
-            unit={fmtINR(data.total_spend)}
-            icon={<IndianRupee size={18}/>} colorIndex={0}
+            value={fmtUSD(data.total_spend, true)}
+            unit={fmtUSD(data.total_spend)}
+            icon={<DollarSign size={18}/>} colorIndex={0}
           />
           <KPICard
             title="Line Items"
@@ -128,30 +127,30 @@ export default function MarketingPage() {
           <KPICard
             title="Top Team"
             value={data.by_team[0]?.name || '—'}
-            unit={fmtINR(data.by_team[0]?.value || 0, true)}
+            unit={fmtUSD(data.by_team[0]?.value || 0, true)}
             icon={<TrendingUp size={18}/>} colorIndex={2}
           />
           <KPICard
             title="Top Business Unit"
             value={buData[0]?.name || '—'}
-            unit={fmtINR(buData[0]?.value || 0, true)}
+            unit={fmtUSD(buData[0]?.value || 0, true)}
             icon={<Building2 size={18}/>} colorIndex={3}
           />
         </div>
 
         {/* Monthly trend — full width */}
-        <LineChartComponent data={monthlyChartData} title="Monthly Spend Trend (₹)" />
+        <LineChartComponent data={monthlyChartData} title="Monthly Spend Trend ($)" />
 
         {/* Pie charts row */}
         <div className="grid gap-5 lg:grid-cols-2">
-          <PieChartComponent data={data.by_segment}      title="Spend by Segment (₹)" />
-          <PieChartComponent data={buData}               title="Spend by Business Unit (₹)" />
+          <PieChartComponent data={data.by_segment}      title="Spend by Segment ($)" />
+          <PieChartComponent data={buData}               title="Spend by Business Unit ($)" />
         </div>
 
         {/* Team vs Type bars */}
         <div className="grid gap-5 lg:grid-cols-2">
-          <BarChartComponent data={data.by_team}         title="Spend by Team (₹)" />
-          <BarChartComponent data={data.by_type.slice(0,8)} title="Top Spend Types (₹)" />
+          <BarChartComponent data={data.by_team}         title="Spend by Team ($)" />
+          <BarChartComponent data={data.by_type.slice(0,8)} title="Top Spend Types ($)" />
         </div>
 
         {/* Line items table */}
@@ -171,7 +170,7 @@ export default function MarketingPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {data.top_line_items.map((item, idx) => (
-                  <tr key={idx} className="hover:bg-emerald-50/20 transition-colors">
+                  <tr key={idx} className="hover:emerald-50/20 transition-colors">
                     <td className="px-4 py-3 text-xs font-bold text-slate-300">#{idx + 1}</td>
                     <td className="px-4 py-3 font-semibold text-slate-800">{item.team}</td>
                     <td className="px-4 py-3 text-slate-500">{item.sub_team}</td>
@@ -187,8 +186,8 @@ export default function MarketingPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-right font-extrabold text-slate-900">
-                      {fmtINR(item.total, true)}
-                      <p className="text-xs font-normal text-slate-400">{fmtINR(item.total)}</p>
+                      {fmtUSD(item.total, true)}
+                      <p className="text-xs font-normal text-slate-400">{fmtUSD(item.total)}</p>
                     </td>
                   </tr>
                 ))}
@@ -197,7 +196,7 @@ export default function MarketingPage() {
                 <tr className="border-t-2 border-slate-200 bg-slate-50/80">
                   <td colSpan={6} className="px-4 py-3 text-sm font-semibold text-slate-600">Total</td>
                   <td className="px-4 py-3 text-right font-extrabold text-emerald-600 text-base">
-                    {fmtINR(data.total_spend, true)}
+                    {fmtUSD(data.total_spend, true)}
                   </td>
                 </tr>
               </tfoot>
@@ -211,8 +210,8 @@ export default function MarketingPage() {
             <div key={m.month} className="glass-card p-4 flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">{m.month} 2026</p>
-                <p className="mt-1 text-xl font-extrabold text-slate-900">{fmtINR(m.spend, true)}</p>
-                <p className="text-xs text-slate-400">{fmtINR(m.spend)}</p>
+                <p className="mt-1 text-xl font-extrabold text-slate-900">{fmtUSD(m.spend, true)}</p>
+                <p className="text-xs text-slate-400">{fmtUSD(m.spend)}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-slate-400">% of total</p>
