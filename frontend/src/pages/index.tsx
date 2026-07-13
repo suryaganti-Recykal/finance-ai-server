@@ -37,7 +37,7 @@ export default function DashboardPage() {
     <Layout>
       <div className="flex h-64 items-center justify-center">
         <div className="text-center">
-          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600" />
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-600" />
           <p className="text-sm font-medium text-slate-500">Loading dashboard…</p>
         </div>
       </div>
@@ -169,10 +169,10 @@ export default function DashboardPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {data.expenses.map((exp, idx) => (
-                  <tr key={idx} className="hover:bg-indigo-50/30 transition-colors">
+                  <tr key={idx} className="hover:bg-emerald-50/30 transition-colors">
                     <td className="px-3 py-3 font-medium text-slate-800">{exp.description}</td>
                     <td className="px-3 py-3">
-                      <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">{exp.category}</span>
+                      <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">{exp.category}</span>
                     </td>
                     <td className="px-3 py-3 text-right font-bold text-slate-900">${(exp.amount||0).toLocaleString()}</td>
                     <td className="px-3 py-3 text-slate-400 text-xs whitespace-nowrap">{formatDate(exp.date)}</td>

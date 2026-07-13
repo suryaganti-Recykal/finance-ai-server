@@ -38,11 +38,8 @@ export function Layout({ children }: { children: ReactNode }) {
       >
         {/* Logo */}
         <div className="flex items-center justify-between px-6 py-5" style={{ borderBottom: '1px solid var(--sidebar-border)' }}>
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
-              <TrendingUp size={16} className="text-white" />
-            </div>
-            <span className="text-lg font-bold text-white tracking-tight">Finance AI</span>
+          <div className="flex items-center">
+            <img src="/recykal-logo.svg" alt="Recykal" className="h-8 brightness-0 invert opacity-90" />
           </div>
           <button onClick={() => setSidebarOpen(false)} className="text-slate-400 hover:text-white lg:hidden transition-colors">
             <X size={20} />
@@ -62,7 +59,7 @@ export function Layout({ children }: { children: ReactNode }) {
                   isActive ? 'nav-item-active' : 'text-slate-400'
                 }`}
               >
-                <Icon size={18} className={isActive ? 'text-indigo-400' : ''} />
+                <Icon size={18} className={isActive ? 'text-emerald-400' : ''} />
                 {label}
               </Link>
             );
@@ -92,8 +89,8 @@ export function Layout({ children }: { children: ReactNode }) {
               <Menu size={22} />
             </button>
             <div>
-              <h2 className="text-lg font-bold text-slate-900 tracking-tight">Finance AI Dashboard</h2>
-              <p className="text-xs text-slate-400 hidden sm:block">Real-time financial intelligence</p>
+              <h2 className="text-lg font-bold text-slate-900 tracking-tight">Recykal Financial Dashboard</h2>
+              <p className="text-xs text-slate-400 hidden sm:block">Real-time intelligence · Sustainable Circularity</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -101,7 +98,7 @@ export function Layout({ children }: { children: ReactNode }) {
               <span className="animate-pulse-dot inline-block h-1.5 w-1.5 rounded-full bg-emerald-500" />
               Live
             </div>
-            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-indigo-400 to-purple-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
+            <div className="h-9 w-9 rounded-full bg-gradient-to-br from-emerald-400 to-teal-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
               SG
             </div>
           </div>

@@ -12,7 +12,7 @@ interface Expense {
 
 const CATEGORY_COLORS: Record<string, string> = {
   Operations: 'bg-sky-50 text-sky-700 border-sky-100',
-  Marketing:  'bg-violet-50 text-violet-700 border-violet-100',
+  Marketing:  'bg-teal-50 text-teal-700 border-teal-100',
   Engineering:'bg-emerald-50 text-emerald-700 border-emerald-100',
   Sales:      'bg-amber-50 text-amber-700 border-amber-100',
 };
@@ -56,7 +56,7 @@ export default function ExpensesPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Expenses</h1>
             <p className="mt-1 text-sm text-slate-400">{expenses.length} transactions recorded</p>
           </div>
-          <button className="inline-flex w-fit items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-indigo-200 hover:bg-indigo-700 transition-colors">
+          <button className="inline-flex w-fit items-center gap-2 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-emerald-200 hover:bg-emerald-700 transition-colors">
             <Download size={16} /> Export CSV
           </button>
         </div>
@@ -64,7 +64,7 @@ export default function ExpensesPage() {
         {/* KPI mini-cards */}
         <div className="grid gap-4 sm:grid-cols-3">
           <div className="glass-card p-4 flex items-center gap-4">
-            <div className="kpi-icon-indigo flex h-10 w-10 items-center justify-center rounded-xl text-white"><DollarSign size={18}/></div>
+            <div className="kpi-icon-emerald flex h-10 w-10 items-center justify-center rounded-xl text-white"><DollarSign size={18}/></div>
             <div>
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Total</p>
               <p className="text-xl font-extrabold text-slate-900">${total.toLocaleString()}</p>
@@ -93,7 +93,7 @@ export default function ExpensesPage() {
             placeholder="Search expenses…"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-sm outline-none focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100 sm:max-w-xs"
+            className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-800 placeholder-slate-400 shadow-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 sm:max-w-xs"
           />
           <div className="flex gap-2 flex-wrap">
             {categories.map(cat => (
@@ -102,8 +102,8 @@ export default function ExpensesPage() {
                 onClick={() => setFilter(cat)}
                 className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
                   filterCat === cat
-                    ? 'bg-indigo-600 text-white shadow-md shadow-indigo-200'
-                    : 'bg-white text-slate-500 border border-slate-200 hover:border-indigo-300 hover:text-indigo-600'
+                    ? 'bg-emerald-600 text-white shadow-md shadow-emerald-200'
+                    : 'bg-white text-slate-500 border border-slate-200 hover:border-emerald-300 hover:text-emerald-600'
                 }`}
               >
                 {cat}
@@ -125,11 +125,11 @@ export default function ExpensesPage() {
               </thead>
               <tbody className="divide-y divide-slate-50">
                 {loading ? (
-                  <tr><td colSpan={6} className="py-12 text-center"><div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600"/></td></tr>
+                  <tr><td colSpan={6} className="py-12 text-center"><div className="mx-auto h-8 w-8 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-600"/></td></tr>
                 ) : filtered.length === 0 ? (
                   <tr><td colSpan={6} className="py-12 text-center text-slate-400">No expenses found</td></tr>
                 ) : filtered.map((exp, idx) => (
-                  <tr key={idx} className="hover:bg-indigo-50/20 transition-colors">
+                  <tr key={idx} className="hover:bg-emerald-50/20 transition-colors">
                     <td className="px-5 py-3.5 font-medium text-slate-800">{exp.description}</td>
                     <td className="px-5 py-3.5">
                       <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${CATEGORY_COLORS[exp.category] || defaultBadge}`}>
@@ -148,7 +148,7 @@ export default function ExpensesPage() {
           {!loading && (
             <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 flex items-center justify-between">
               <p className="text-xs text-slate-400">{filtered.length} of {expenses.length} expenses</p>
-              <p className="text-xs font-semibold text-slate-600">Total: <span className="text-indigo-600">${total.toLocaleString()}</span></p>
+              <p className="text-xs font-semibold text-slate-600">Total: <span className="text-emerald-600">${total.toLocaleString()}</span></p>
             </div>
           )}
         </div>

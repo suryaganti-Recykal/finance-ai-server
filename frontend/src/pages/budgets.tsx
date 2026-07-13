@@ -11,7 +11,7 @@ interface Budget {
 }
 
 const DEPT_COLORS: Record<string, string> = {
-  Marketing:   'from-violet-500 to-indigo-500',
+  Marketing:   'from-teal-500 to-emerald-500',
   Operations:  'from-sky-500 to-cyan-500',
   Engineering: 'from-emerald-500 to-teal-500',
   Sales:       'from-amber-500 to-orange-500',
@@ -76,7 +76,7 @@ export default function BudgetsPage() {
         {/* Department cards */}
         {loading ? (
           <div className="flex justify-center py-12">
-            <div className="h-12 w-12 animate-spin rounded-full border-4 border-indigo-100 border-t-indigo-600"/>
+            <div className="h-12 w-12 animate-spin rounded-full border-4 border-emerald-100 border-t-emerald-600"/>
           </div>
         ) : (
           <div className="grid gap-5 lg:grid-cols-2">

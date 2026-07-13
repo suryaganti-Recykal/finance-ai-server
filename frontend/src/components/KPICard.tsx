@@ -3,7 +3,7 @@
 import { TrendingUp, TrendingDown, Minus } from 'lucide-react';
 import { ReactNode } from 'react';
 
-const iconGradients = ['kpi-icon-indigo', 'kpi-icon-emerald', 'kpi-icon-amber', 'kpi-icon-rose', 'kpi-icon-cyan'];
+const iconGradients = ['kpi-icon-emerald', 'kpi-icon-teal', 'kpi-icon-amber', 'kpi-icon-slate', 'kpi-icon-cyan'];
 let cardIndex = 0;
 
 interface KPICardProps {

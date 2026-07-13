@@ -6,7 +6,7 @@ import {
   ResponsiveContainer, Area, AreaChart,
 } from 'recharts';
 
-const COLORS = ['#6366f1','#10b981','#f59e0b','#f43f5e','#06b6d4','#8b5cf6','#ec4899','#14b8a6'];
+const COLORS = ['#10b981','#14b8a6','#f59e0b','#f43f5e','#06b6d4','#64748b','#ec4899','#059669'];
 
 interface ChartData {
   name: string;
@@ -41,14 +41,14 @@ export function BarChartComponent({ data, title, dataKey = 'value' }: { data: Ch
         <BarChart data={data} barSize={32} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" />
-              <stop offset="100%" stopColor="#8b5cf6" />
+              <stop offset="0%" stopColor="#10b981" />
+              <stop offset="100%" stopColor="#059669" />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${v}`} />
-          <Tooltip contentStyle={TooltipStyle} cursor={{ fill: 'rgba(99,102,241,0.06)' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Value']} />
+          <Tooltip contentStyle={TooltipStyle} cursor={{ fill: 'rgba(16,185,129,0.06)' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Value']} />
           <Bar dataKey={dataKey} fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -63,15 +63,15 @@ export function LineChartComponent({ data, title, dataKey = 'value' }: { data: C
         <AreaChart data={data} margin={{ top: 4, right: 4, left: -16, bottom: 0 }}>
           <defs>
             <linearGradient id="lineArea" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity={0.25} />
-              <stop offset="100%" stopColor="#6366f1" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="#10b981" stopOpacity={0.25} />
+              <stop offset="100%" stopColor="#10b981" stopOpacity={0.02} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
           <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${v}`} />
           <Tooltip contentStyle={TooltipStyle} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Spend']} />
-          <Area type="monotone" dataKey={dataKey} stroke="#6366f1" strokeWidth={2.5} fill="url(#lineArea)" dot={{ fill: '#6366f1', r: 4 }} activeDot={{ r: 6, fill: '#6366f1' }} />
+          <Area type="monotone" dataKey={dataKey} stroke="#10b981" strokeWidth={2.5} fill="url(#lineArea)" dot={{ fill: '#10b981', r: 4 }} activeDot={{ r: 6, fill: '#10b981' }} />
         </AreaChart>
       </ResponsiveContainer>
     </ChartCard>
