@@ -108,7 +108,9 @@ export default function DashboardPage() {
           <h3 className="mb-5 text-sm font-semibold uppercase tracking-wider text-slate-400">Budget Allocation</h3>
           <div className="space-y-4">
             {data.budgets.map((budget: any, idx: number) => {
-              const utilization = budget.total > 0 ? (budget.spent / budget.total) * 100 : 0;
+              const spent = parseFloat(budget.spent || 0);
+              const total = parseFloat(budget.total || 0);
+              const utilization = total > 0 ? (spent / total) * 100 : 0;
               const status = utilization > 90 ? 'red' : utilization > 70 ? 'amber' : 'emerald';
               const barColors: Record<string, string> = { red: 'bg-red-500', amber: 'bg-amber-500', emerald: 'bg-emerald-500' };
               const bgColors: Record<string, string> = { red: 'bg-red-50 border-red-100', amber: 'bg-amber-50 border-amber-100', emerald: 'bg-emerald-50 border-emerald-100' };
@@ -118,7 +120,7 @@ export default function DashboardPage() {
                   <div className="mb-3 flex items-center justify-between">
                     <div>
                       <p className="font-semibold text-slate-800">{budget.department}</p>
-                      <p className="text-xs text-slate-500 mt-0.5">${budget.spent.toFixed(0)} spent of ${budget.total.toFixed(0)}</p>
+                      <p className="text-xs text-slate-500 mt-0.5">${spent.toFixed(0)} spent of ${total.toFixed(0)}</p>
                     </div>
                     <span className={`text-lg font-extrabold ${textColors[status]}`}>{utilization.toFixed(1)}%</span>
                   </div>
