@@ -33,4 +33,4 @@ COPY --from=builder /app/out ./out
 ENV NODE_ENV=production
 
 # Run application
-CMD npx serve@latest out
+CMD serve out -p ${PORT:-3000}
