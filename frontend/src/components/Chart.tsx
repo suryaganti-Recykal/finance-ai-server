@@ -47,8 +47,8 @@ export function BarChartComponent({ data, title, dataKey = 'value' }: { data: Ch
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${v}`} />
-          <Tooltip contentStyle={TooltipStyle} cursor={{ fill: 'rgba(16,185,129,0.06)' }} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Value']} />
+          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `₹${(v/1000).toFixed(0)}K` : `₹${v}`} />
+          <Tooltip contentStyle={TooltipStyle} cursor={{ fill: 'rgba(16,185,129,0.06)' }} formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Value']} />
           <Bar dataKey={dataKey} fill="url(#barGrad)" radius={[6, 6, 0, 0]} />
         </BarChart>
       </ResponsiveContainer>
@@ -69,8 +69,8 @@ export function LineChartComponent({ data, title, dataKey = 'value' }: { data: C
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
           <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#94a3b8' }} axisLine={false} tickLine={false} />
-          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `$${(v/1000).toFixed(0)}K` : `$${v}`} />
-          <Tooltip contentStyle={TooltipStyle} formatter={(v: number) => [`$${v.toLocaleString()}`, 'Spend']} />
+          <YAxis tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} tickFormatter={v => v >= 1000 ? `₹${(v/1000).toFixed(0)}K` : `₹${v}`} />
+          <Tooltip contentStyle={TooltipStyle} formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Spend']} />
           <Area type="monotone" dataKey={dataKey} stroke="#10b981" strokeWidth={2.5} fill="url(#lineArea)" dot={{ fill: '#10b981', r: 4 }} activeDot={{ r: 6, fill: '#10b981' }} />
         </AreaChart>
       </ResponsiveContainer>
@@ -115,7 +115,7 @@ export function PieChartComponent({ data, title }: { data: ChartData[]; title: s
           </Pie>
           <Tooltip
             contentStyle={TooltipStyle}
-            formatter={(v: number, name: string) => [`$${v.toLocaleString()} (${((v/total)*100).toFixed(1)}%)`, name]}
+            formatter={(v: number, name: string) => [`₹${v.toLocaleString()} (${((v/total)*100).toFixed(1)}%)`, name]}
           />
         </PieChart>
       </ResponsiveContainer>

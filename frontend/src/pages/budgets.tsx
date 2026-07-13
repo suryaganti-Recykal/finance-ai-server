@@ -56,9 +56,9 @@ export default function BudgetsPage() {
               <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Overall Budget Utilization</p>
               <p className="mt-2 text-4xl font-extrabold text-slate-900">{overallPct.toFixed(1)}<span className="text-2xl text-slate-400">%</span></p>
               <div className="mt-1 flex gap-4 text-sm">
-                <span className="text-slate-500">Spent: <span className="font-bold text-slate-800">${totalSpent.toLocaleString()}</span></span>
-                <span className="text-slate-500">Remaining: <span className="font-bold text-emerald-600">${totalRemaining.toLocaleString()}</span></span>
-                <span className="text-slate-500">Total: <span className="font-bold text-slate-800">${totalBudget.toLocaleString()}</span></span>
+                <span className="text-slate-500">Spent: <span className="font-bold text-slate-800">₹{totalSpent.toLocaleString()}</span></span>
+                <span className="text-slate-500">Remaining: <span className="font-bold text-emerald-600">₹{totalRemaining.toLocaleString()}</span></span>
+                <span className="text-slate-500">Total: <span className="font-bold text-slate-800">₹{totalBudget.toLocaleString()}</span></span>
               </div>
             </div>
             <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full" style={{ background: 'linear-gradient(135deg, #6366f1, #8b5cf6)' }}>
@@ -113,13 +113,13 @@ export default function BudgetsPage() {
                   {/* Spend vs total */}
                   <div className="mb-3 flex items-center justify-between text-sm">
                     <span className="text-slate-500">
-                      Spent: <span className="font-bold text-slate-800">${spent.toLocaleString()}</span>
+                      Spent: <span className="font-bold text-slate-800">₹{spent.toLocaleString()}</span>
                     </span>
                     <span className="text-slate-500">
-                      Remaining: <span className="font-bold text-emerald-600">${remaining.toLocaleString()}</span>
+                      Remaining: <span className="font-bold text-emerald-600">₹{remaining.toLocaleString()}</span>
                     </span>
                     <span className="text-slate-500">
-                      Total: <span className="font-bold text-slate-700">${total.toLocaleString()}</span>
+                      Total: <span className="font-bold text-slate-700">₹{total.toLocaleString()}</span>
                     </span>
                   </div>
 

@@ -67,21 +67,21 @@ export default function ExpensesPage() {
             <div className="kpi-icon-emerald flex h-10 w-10 items-center justify-center rounded-xl text-white"><DollarSign size={18}/></div>
             <div>
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Total</p>
-              <p className="text-xl font-extrabold text-slate-900">${total.toLocaleString()}</p>
+              <p className="text-xl font-extrabold text-slate-900">₹{total.toLocaleString()}</p>
             </div>
           </div>
           <div className="glass-card p-4 flex items-center gap-4">
             <div className="kpi-icon-emerald flex h-10 w-10 items-center justify-center rounded-xl text-white"><TrendingUp size={18}/></div>
             <div>
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Average</p>
-              <p className="text-xl font-extrabold text-slate-900">${average.toFixed(0)}</p>
+              <p className="text-xl font-extrabold text-slate-900">₹{average.toFixed(0)}</p>
             </div>
           </div>
           <div className="glass-card p-4 flex items-center gap-4">
             <div className="kpi-icon-amber flex h-10 w-10 items-center justify-center rounded-xl text-white"><Receipt size={18}/></div>
             <div>
               <p className="text-xs text-slate-400 font-semibold uppercase tracking-wide">Largest</p>
-              <p className="text-xl font-extrabold text-slate-900">${highest.toLocaleString()}</p>
+              <p className="text-xl font-extrabold text-slate-900">₹{highest.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -136,7 +136,7 @@ export default function ExpensesPage() {
                         {exp.category}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 text-right font-bold text-slate-900">${(exp.amount||0).toLocaleString()}</td>
+                    <td className="px-5 py-3.5 text-right font-bold text-slate-900">₹{(exp.amount||0).toLocaleString()}</td>
                     <td className="px-5 py-3.5 text-xs text-slate-400 whitespace-nowrap">{formatDate(exp.date)}</td>
                     <td className="px-5 py-3.5 text-sm text-slate-600">{exp.merchant || '—'}</td>
                     <td className="px-5 py-3.5 text-xs text-slate-400">{exp.source?.replace(/_/g,' ')}</td>
@@ -148,7 +148,7 @@ export default function ExpensesPage() {
           {!loading && (
             <div className="border-t border-slate-100 bg-slate-50/60 px-5 py-3 flex items-center justify-between">
               <p className="text-xs text-slate-400">{filtered.length} of {expenses.length} expenses</p>
-              <p className="text-xs font-semibold text-slate-600">Total: <span className="text-emerald-600">${total.toLocaleString()}</span></p>
+              <p className="text-xs font-semibold text-slate-600">Total: <span className="text-emerald-600">₹{total.toLocaleString()}</span></p>
             </div>
           )}
         </div>

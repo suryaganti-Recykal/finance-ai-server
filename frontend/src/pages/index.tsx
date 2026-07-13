@@ -17,8 +17,11 @@ function formatDate(iso: string) {
   try { return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); }
   catch { return iso; }
 }
-function fmtUSD(val: number) {
-  return val >= 1000 ? `$${(val / 1000).toFixed(1)}K` : `$${val.toFixed(0)}`;
+function fmtINR(val: number) {
+  if (val >= 10000000) return `₹${(val / 10000000).toFixed(2)}Cr`;
+  if (val >= 100000) return `₹${(val / 100000).toFixed(2)}L`;
+  if (val >= 1000) return `₹${(val / 1000).toFixed(1)}K`;
+  return `₹${val.toFixed(0)}`;
 }
 
 export default function DashboardPage() {
@@ -99,17 +102,17 @@ export default function DashboardPage() {
 
         {/* KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <KPICard title="Total Expenses"    value={fmtUSD(totalExpenses)}  trend="up"     trendPercent={12} icon={<DollarSign size={18}/>} colorIndex={0}/>
+          <KPICard title="Total Expenses"    value={fmtINR(totalExpenses)}  trend="up"     trendPercent={12} icon={<DollarSign size={18}/>} colorIndex={0}/>
           <KPICard title="Transactions"      value={expenseCount}            trend="up"     trendPercent={5}  icon={<Hash size={18}/>}        colorIndex={1}/>
-          <KPICard title="Marketing Spend"   value={fmtUSD(totalMarketing)} trend="up"     trendPercent={8}  icon={<Megaphone size={18}/>}   colorIndex={2}/>
+          <KPICard title="Marketing Spend"   value={fmtINR(totalMarketing)} trend="up"     trendPercent={8}  icon={<Megaphone size={18}/>}   colorIndex={2}/>
           <KPICard title="Budget Utilized"   value={`${budgetUtilPct.toFixed(1)}%`}
-                   unit={`${fmtUSD(totalSpent)} of ${fmtUSD(totalBudget)}`} icon={<TrendingUp size={18}/>}  colorIndex={3}/>
+                   unit={`${fmtINR(totalSpent)} of ${fmtINR(totalBudget)}`} icon={<TrendingUp size={18}/>}  colorIndex={3}/>
         </div>
 
         {/* Charts row 1 */}
         <div className="grid gap-5 lg:grid-cols-2">
           <PieChartComponent  data={expensesByCategory}  title="Expenses by Category" />
-          <BarChartComponent  data={marketingByPlatform} title="Live Marketing Spend by Segment ($)" />
+          <BarChartComponent  data={marketingByPlatform} title="Live Marketing Spend by Segment (₹)" />
         </div>
 
         {/* Forecast chart */}
@@ -136,7 +139,7 @@ export default function DashboardPage() {
                     <div>
                       <p className="font-semibold text-slate-800 text-sm">{budget.department}</p>
                       <p className="text-xs text-slate-500 mt-0.5">
-                        <span className="font-medium text-slate-700">${spent.toLocaleString()}</span> spent · <span className="font-medium text-emerald-600">${remaining.toLocaleString()}</span> remaining of <span className="font-medium">${total.toLocaleString()}</span>
+                        <span className="font-medium text-slate-700">₹{spent.toLocaleString()}</span> spent · <span className="font-medium text-emerald-600">₹{remaining.toLocaleString()}</span> remaining of <span className="font-medium">₹{total.toLocaleString()}</span>
                       </p>
                     </div>
                     <span className={`text-base font-extrabold ${txt[status]}`}>{pct.toFixed(1)}%</span>
@@ -149,7 +152,7 @@ export default function DashboardPage() {
                     {(['q1','q2','q3','q4'] as const).map(q => (
                       <div key={q} className="rounded-lg bg-white/70 p-2 text-center">
                         <p className="text-xs text-slate-400 font-medium uppercase">{q}</p>
-                        <p className="text-sm font-bold text-slate-700">${(parseFloat((budget as any)[q]||'0')/1000).toFixed(0)}K</p>
+                        <p className="text-sm font-bold text-slate-700">₹{(parseFloat((budget as any)[q]||'0')/1000).toFixed(0)}K</p>
                       </div>
                     ))}
                   </div>
@@ -178,7 +181,7 @@ export default function DashboardPage() {
                     <td className="px-3 py-3">
                       <span className="inline-flex items-center rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">{exp.category}</span>
                     </td>
-                    <td className="px-3 py-3 text-right font-bold text-slate-900">${(exp.amount||0).toLocaleString()}</td>
+                    <td className="px-3 py-3 text-right font-bold text-slate-900">₹{(exp.amount||0).toLocaleString()}</td>
                     <td className="px-3 py-3 text-slate-400 text-xs whitespace-nowrap">{formatDate(exp.date)}</td>
                     <td className="px-3 py-3 text-slate-500 text-xs">{exp.merchant}</td>
                   </tr>
