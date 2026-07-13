@@ -19,8 +19,5 @@ COPY app/src/ src/
 COPY app/alembic/ alembic/
 COPY app/alembic.ini .
 
-# Expose port (Railway injects $PORT)
-EXPOSE 8000
-
 # Run application
 CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}
