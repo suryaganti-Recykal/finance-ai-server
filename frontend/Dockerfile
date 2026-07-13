@@ -24,20 +24,13 @@ WORKDIR /app
 COPY package*.json ./
 
 # Install production dependencies only
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev && npm install -g serve
 
-# Copy built application from builder
-COPY --from=builder /app/.next ./.next
-# Copy public dir (may be empty but must exist)
-COPY --from=builder /app/public ./public
-COPY next.config.js .
-
-# Expose port
-EXPOSE 3000
+# Copy built static files from builder
+COPY --from=builder /app/out ./out
 
 # Environment
 ENV NODE_ENV=production
-ENV PORT=3000
 
 # Run application
-CMD npm start
+CMD npx serve@latest out
