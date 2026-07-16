@@ -148,7 +148,7 @@ def generate_demo_budgets(company_id: str) -> list[dict[str, Any]]:
             "total": Decimal("235000"),
             "status": "active",
             "spent": Decimal("15500"),
-            "remaining": Decimal("19500"),
+            "remaining": Decimal("219500"),
         },
         {
             "department": "Operations",
@@ -159,7 +159,7 @@ def generate_demo_budgets(company_id: str) -> list[dict[str, Any]]:
             "total": Decimal("175000"),
             "status": "active",
             "spent": Decimal("2450"),
-            "remaining": Decimal("37550"),
+            "remaining": Decimal("172550"),
         },
         {
             "department": "Engineering",
@@ -170,7 +170,7 @@ def generate_demo_budgets(company_id: str) -> list[dict[str, Any]]:
             "total": Decimal("260000"),
             "status": "active",
             "spent": Decimal("0"),
-            "remaining": Decimal("60000"),
+            "remaining": Decimal("260000"),
         },
         {
             "department": "Sales",
@@ -181,7 +181,7 @@ def generate_demo_budgets(company_id: str) -> list[dict[str, Any]]:
             "total": Decimal("150000"),
             "status": "active",
             "spent": Decimal("0"),
-            "remaining": Decimal("30000"),
+            "remaining": Decimal("150000"),
         },
     ]
 
