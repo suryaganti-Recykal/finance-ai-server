@@ -13,6 +13,7 @@ RUN npm ci
 COPY . .
 
 # Build application
+ENV NEXT_TELEMETRY_DISABLED 1
 RUN npm run build
 
 # Production stage
