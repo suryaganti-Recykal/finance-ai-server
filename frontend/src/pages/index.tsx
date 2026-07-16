@@ -67,10 +67,11 @@ export default function DashboardPage() {
   );
 
   // ── Derived metrics (all values correctly typed) ──────────────────────────
-  const totalExpenses   = data.expenses.reduce((s, e) => s + (e.amount || 0), 0);
+  const baseExpenses    = data.expenses.reduce((s, e) => s + (e.amount || 0), 0);
   const totalMarketing  = liveMarketing ? liveMarketing.total_spend : 0;
+  const totalExpenses   = baseExpenses + totalMarketing;
   const expenseCount    = data.expenses.length;
-  const avgExpense      = expenseCount > 0 ? totalExpenses / expenseCount : 0;
+  const avgExpense      = expenseCount > 0 ? baseExpenses / expenseCount : 0;
   const totalBudget     = data.budgets.reduce((s, b) => s + parseFloat(b.total || '0'), 0);
   const totalSpent      = data.budgets.reduce((s, b) => s + parseFloat(b.spent || '0'), 0);
   const budgetUtilPct   = totalBudget > 0 ? (totalSpent / totalBudget) * 100 : 0;
