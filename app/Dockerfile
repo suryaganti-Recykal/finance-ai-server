@@ -14,8 +14,9 @@ RUN pip install --no-cache-dir -e .
 
 # Copy application code
 COPY src/ src/
+COPY scripts/ scripts/
 COPY alembic/ alembic/
 COPY alembic.ini .
 
 # Run application
-CMD uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}
+CMD ["/bin/sh", "-c", "alembic upgrade head && python scripts/seed_demo_data.py && uvicorn src.main:app --host 0.0.0.0 --port ${PORT:-8000}"]

@@ -27,7 +27,11 @@ async def get_current_company_id(
         # Fallback for local dashboard UI testing
         if x_company_id:
             try:
-                comp_id = uuid.UUID(x_company_id)
+                # Map frontend dummy ID to the database seed UUID
+                if x_company_id == "demo-company-001":
+                    comp_id = uuid.UUID('550e8400-e29b-41d4-a716-446655440000')
+                else:
+                    comp_id = uuid.UUID(x_company_id)
                 set_current_company_id(comp_id)
                 return comp_id
             except ValueError:
