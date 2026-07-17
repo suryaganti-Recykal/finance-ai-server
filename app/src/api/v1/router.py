@@ -14,6 +14,7 @@ from src.api.v1.routers import (
     notifications,
     reports,
     sheets_auth,
+    settings,
 )
 
 api_router = APIRouter()
@@ -31,3 +32,4 @@ api_router.include_router(demo.router)
 api_router.include_router(sheets_auth.router)
 api_router.include_router(live_spend.router)
 api_router.include_router(health.router)
+api_router.include_router(settings.router)

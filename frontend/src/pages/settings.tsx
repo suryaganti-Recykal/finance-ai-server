@@ -1,11 +1,44 @@
 /**Premium Settings Page */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
-import { Settings, Save, Bell, Shield, Key, User } from 'lucide-react';
+import { dashboardAPI } from '@/lib/api';
+import { Settings, Save, Bell, Shield, Key, User, Loader2 } from 'lucide-react';
 
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('integrations');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [settings, setSettings] = useState({
+    marketing_sheet_id: '',
+    zoho_client_id: '',
+    zoho_client_secret: '',
+    zoho_org_id: '',
+  });
+
+  useEffect(() => {
+    dashboardAPI.getSettings()
+      .then(r => {
+        if (r.data.data) {
+          setSettings(prev => ({ ...prev, ...r.data.data }));
+        }
+      })
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      await dashboardAPI.updateSettings(settings);
+      alert('Settings saved successfully!');
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save settings.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <Layout>
@@ -16,8 +49,13 @@ export default function SettingsPage() {
             <h1 className="text-2xl font-extrabold tracking-tight text-slate-900">Settings</h1>
             <p className="mt-1 text-sm text-slate-400">Manage integrations, preferences, and account details</p>
           </div>
-          <button className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm">
-            <Save size={16} /> Save Changes
+          <button 
+            onClick={handleSave}
+            disabled={saving || loading}
+            className="flex items-center gap-2 rounded-lg bg-emerald-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700 transition-colors shadow-sm disabled:opacity-50"
+          >
+            {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+            {saving ? 'Saving...' : 'Save Changes'}
           </button>
         </div>
 
@@ -47,7 +85,11 @@ export default function SettingsPage() {
 
           {/* Tab Content */}
           <div className="flex-1">
-            {activeTab === 'integrations' && (
+            {loading ? (
+              <div className="flex justify-center p-12">
+                <Loader2 size={32} className="animate-spin text-emerald-500" />
+              </div>
+            ) : activeTab === 'integrations' ? (
               <div className="space-y-6 animate-fade-in">
                 {/* Zoho Books Integration */}
                 <div className="glass-card p-6">
@@ -59,7 +101,9 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Client ID</label>
                       <input 
                         type="text" 
-                        defaultValue="1000.XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+                        value={settings.zoho_client_id}
+                        onChange={e => setSettings({...settings, zoho_client_id: e.target.value})}
+                        placeholder="1000.XXXXXXXXXXXXXXXXXXXXXXXXXXXX"
                         className="w-full sm:w-96 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50 text-slate-600"
                       />
                     </div>
@@ -67,7 +111,9 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Client Secret</label>
                       <input 
                         type="password" 
-                        defaultValue="••••••••••••••••••••••••••••••••"
+                        value={settings.zoho_client_secret}
+                        onChange={e => setSettings({...settings, zoho_client_secret: e.target.value})}
+                        placeholder="••••••••••••••••••••••••••••••••"
                         className="w-full sm:w-96 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50 text-slate-600"
                       />
                     </div>
@@ -75,14 +121,11 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Organization ID</label>
                       <input 
                         type="text" 
-                        defaultValue="654321098"
+                        value={settings.zoho_org_id}
+                        onChange={e => setSettings({...settings, zoho_org_id: e.target.value})}
+                        placeholder="654321098"
                         className="w-full sm:w-96 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50 text-slate-600"
                       />
-                    </div>
-                    <div className="pt-2">
-                      <button className="px-4 py-2 rounded-lg border border-slate-200 text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
-                        Test Connection
-                      </button>
                     </div>
                   </div>
                 </div>
@@ -97,16 +140,16 @@ export default function SettingsPage() {
                       <label className="block text-sm font-semibold text-slate-700 mb-1">Spreadsheet ID</label>
                       <input 
                         type="text" 
-                        defaultValue="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+                        value={settings.marketing_sheet_id}
+                        onChange={e => setSettings({...settings, marketing_sheet_id: e.target.value})}
+                        placeholder="1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
                         className="w-full sm:w-96 px-4 py-2 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 bg-slate-50 text-slate-600"
                       />
                     </div>
                   </div>
                 </div>
               </div>
-            )}
-
-            {activeTab !== 'integrations' && (
+            ) : (
               <div className="glass-card p-12 text-center text-slate-500 animate-fade-in">
                 <Settings size={48} className="mx-auto mb-4 text-slate-300" />
                 <h3 className="text-lg font-bold text-slate-700 mb-2">Configuration Pending</h3>

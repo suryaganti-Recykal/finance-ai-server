@@ -6,6 +6,9 @@ on every request. This is real data, not demo/sample data.
 
 from fastapi import APIRouter, HTTPException
 
+from src.api.deps import CurrentCompanyId, DbSession
+from src.infrastructure.db.models.company import CompanyModel
+from sqlalchemy import select
 from src.application.marketing.services.live_spend_service import LiveSpendService
 from src.core.config.settings import get_settings
 from src.core.logging.logger import get_logger
@@ -18,11 +21,23 @@ router = APIRouter(prefix="/live", tags=["live-spend"])
 
 
 @router.get("/marketing-spend", response_model=SuccessResponse[dict])
-async def get_live_marketing_spend() -> SuccessResponse[dict]:
+async def get_live_marketing_spend(
+    company_id: CurrentCompanyId,
+    db: DbSession,
+) -> SuccessResponse[dict]:
     """Fetch and summarize live marketing spend from the connected Google Sheet."""
+    # Get sheet ID from database settings
+    stmt = select(CompanyModel).where(CompanyModel.id == company_id)
+    company = (await db.execute(stmt)).scalar_one_or_none()
+    
     settings = get_settings()
+    sheet_id = settings.MARKETING_SHEET_ID
+    if company and company.settings and "marketing_sheet_id" in company.settings:
+        if company.settings["marketing_sheet_id"]:
+            sheet_id = company.settings["marketing_sheet_id"]
+
     connector = MarketingSpendSheetConnector(
-        sheet_id=settings.MARKETING_SHEET_ID,
+        sheet_id=sheet_id,
         gid=settings.MARKETING_SHEET_GID,
     )
 
@@ -37,11 +52,22 @@ async def get_live_marketing_spend() -> SuccessResponse[dict]:
 
 
 @router.get("/marketing-spend/raw", response_model=SuccessResponse[list[dict]])
-async def get_live_marketing_spend_raw() -> SuccessResponse[list[dict]]:
+async def get_live_marketing_spend_raw(
+    company_id: CurrentCompanyId,
+    db: DbSession,
+) -> SuccessResponse[list[dict]]:
     """Fetch raw line-item records (no aggregation) for detailed views/export."""
+    stmt = select(CompanyModel).where(CompanyModel.id == company_id)
+    company = (await db.execute(stmt)).scalar_one_or_none()
+    
     settings = get_settings()
+    sheet_id = settings.MARKETING_SHEET_ID
+    if company and company.settings and "marketing_sheet_id" in company.settings:
+        if company.settings["marketing_sheet_id"]:
+            sheet_id = company.settings["marketing_sheet_id"]
+
     connector = MarketingSpendSheetConnector(
-        sheet_id=settings.MARKETING_SHEET_ID,
+        sheet_id=sheet_id,
         gid=settings.MARKETING_SHEET_GID,
     )
 

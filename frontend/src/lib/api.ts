@@ -46,6 +46,10 @@ export const dashboardAPI = {
   getLiveMarketingSpend: () => apiClient.get('/live/marketing-spend'),
   getLiveMarketingSpendRaw: () => apiClient.get('/live/marketing-spend/raw'),
 
+  // Settings
+  getSettings: () => apiClient.get('/settings'),
+  updateSettings: (data: any) => apiClient.post('/settings', data),
+
   // Health check
   getHealth: () => apiClient.get('/health'),
 };

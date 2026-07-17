@@ -1,5 +1,6 @@
 import uuid
 
+import sqlalchemy
 from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
@@ -15,6 +16,7 @@ class CompanyModel(Base):
     slug: Mapped[str] = mapped_column(String(100), nullable=False, unique=True, index=True)
     logo_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     website: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    settings: Mapped[dict | None] = mapped_column(type_=sqlalchemy.JSON, nullable=True)
     is_active: Mapped[bool] = mapped_column(default=True, index=True)
 
     users: Mapped[list["UserModel"]] = relationship("UserModel", back_populates="company")
